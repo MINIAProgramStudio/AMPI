@@ -1,4 +1,10 @@
+from email.parser import Parser
 from random import random
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+from tqdm import tqdm
+import numpy as np
+import math
 
 class OneDimentionalWolf:
     def __init__(self, x, speed):
@@ -6,10 +12,13 @@ class OneDimentionalWolf:
         self.speed = speed
 
 class OneDimentionalPackOfWolfs:
-    def __init__(self, x_min, x_max, func, n_of_wolfs, speed_func, seeking_min = False):
+    def __init__(self, x_min, x_max, func, n_of_wolfs, speed_func = None, seeking_min = False):
         self.x_min = x_min
         self.x_max = x_max
         self.func = func
+        if speed_func is None:
+            def speed_func(rand):
+                return rand*(x_max-x_min)/(n_of_wolfs)
         self.speed_func = speed_func
         self.seeking_min = seeking_min
         if n_of_wolfs >= 2:
@@ -18,7 +27,7 @@ class OneDimentionalPackOfWolfs:
                           ]
             if n_of_wolfs >=3:
                 for i in range(2,n_of_wolfs):
-                    self.wolfs.append(OneDimentionalWolf(random()*(x_max-x_min)+x_min, self.speed_func(random))) # Вовки на випадкових позиціях
+                    self.wolfs.append(OneDimentionalWolf(random()*(x_max-x_min)+x_min, self.speed_func(random()))) # Вовки на випадкових позиціях
         else:
             raise Exception("too few wolfs")
 
@@ -27,14 +36,14 @@ class OneDimentionalPackOfWolfs:
         if self.seeking_min:
             prime_value = float("inf")
             for i in range(len(self.wolfs)):
-                value = self.func(self.wolfs[i])
+                value = self.func(self.wolfs[i].x)
                 if value < prime_value:
                     prime = i
                     prime_value = value
         else:
             prime_value = -float("inf")
             for i in range(len(self.wolfs)):
-                value = self.func(self.wolfs[i])
+                value = self.func(self.wolfs[i].x)
                 if value > prime_value:
                     prime = i
                     prime_value = value
@@ -44,9 +53,51 @@ class OneDimentionalPackOfWolfs:
         prime = self.find_prime()[0]
         for i in range(len(self.wolfs)):
             if i != prime:
-                if self.wolfs[i].x < self.wolfs[prime]:
+                if self.wolfs[i].x < self.wolfs[prime].x:
                     self.wolfs[i].x += self.wolfs[i].speed
                 else:
                     self.wolfs[i].x -= self.wolfs[i].speed
+                self.wolfs[i].x = max(self.x_min, min(self.x_max, self.wolfs[i].x))
 
-    
+    def solve(self, iterations = 100, animate = False):
+        if animate:
+            fig, ax = plt.subplots()
+            dots_x = [wolf.x for wolf in self.wolfs]
+            dots_y = [self.func(wolf.x) for wolf in self.wolfs]
+            prime_x = [self.wolfs[self.find_prime()[0]].x]
+            prime_y = [self.find_prime()[1]]
+
+            func_x = np.linspace(self.x_min, self.x_max, 1000)
+            func_y = [self.func(i) for i in func_x]
+
+            dots = ax.scatter(dots_x, dots_y, c="#0055ff", zorder = 5)
+            prime = ax.scatter(prime_x, prime_y, s=75, c = "#ffaa00", zorder = 10)
+            func = ax.plot(func_x, func_y, zorder = 0)
+
+            fig.suptitle(str(0) + "/" + str(iterations) + " Best: " + str(self.find_prime()[1]))
+            def update(frame):
+                self.move()
+                dots_x = [wolf.x for wolf in self.wolfs]
+                dots_y = [self.func(wolf.x) for wolf in self.wolfs]
+                prime_x = [self.wolfs[self.find_prime()[0]].x]
+                prime_y = [self.find_prime()[1]]
+
+                dots.set_xdata = dots_x
+                dots.set_ydata = dots_y
+
+                dots.set_offsets(np.c_[dots_x, dots_y])
+                prime.set_offsets(np.c_[[prime_x], [prime_y]])
+                fig.suptitle(str(frame+1)+"/"+str(iterations)+" Best: "+str(round(self.find_prime()[1],3)))
+                if frame >=iterations-1:
+                    ani.pause()
+                return dots, prime
+
+            writervideo = animation.PillowWriter(fps=15, bitrate=1800)
+            ani = animation.FuncAnimation(fig=fig, func=update, frames=iterations, interval = 500)
+            ani.save("latest.gif", writer = writervideo)
+            #plt.show()
+
+        else:
+            for i in tqdm(range(iterations)):
+                self.move()
+            return [self.wolfs[self.find_prime()[0]].x, self.find_prime()[1]]
