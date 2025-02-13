@@ -49,14 +49,14 @@ class OneDimentionalPackOfWolfs:
                     prime_value = value
         return [prime, prime_value]
 
-    def move(self):
+    def move(self, mult = 1):
         prime = self.find_prime()[0]
         for i in range(len(self.wolfs)):
             if i != prime:
                 if self.wolfs[i].x < self.wolfs[prime].x:
-                    self.wolfs[i].x += self.wolfs[i].speed
+                    self.wolfs[i].x += self.wolfs[i].speed*mult
                 else:
-                    self.wolfs[i].x -= self.wolfs[i].speed
+                    self.wolfs[i].x -= self.wolfs[i].speed*mult
                 self.wolfs[i].x = max(self.x_min, min(self.x_max, self.wolfs[i].x))
 
     def solve(self, iterations = 100, animate = False):
@@ -74,9 +74,9 @@ class OneDimentionalPackOfWolfs:
             prime = ax.scatter(prime_x, prime_y, s=75, c = "#ffaa00", zorder = 10)
             func = ax.plot(func_x, func_y, zorder = 0)
 
-            fig.suptitle(str(0) + "/" + str(iterations) + " Best: " + str(self.find_prime()[1]))
+            fig.suptitle("Wolfs "+str(0) + "/" + str(iterations) + " Best: " + str(round(self.find_prime()[1],3)))
             def update(frame):
-                self.move()
+                self.move(10/iterations)
                 dots_x = [wolf.x for wolf in self.wolfs]
                 dots_y = [self.func(wolf.x) for wolf in self.wolfs]
                 prime_x = [self.wolfs[self.find_prime()[0]].x]
@@ -87,14 +87,14 @@ class OneDimentionalPackOfWolfs:
 
                 dots.set_offsets(np.c_[dots_x, dots_y])
                 prime.set_offsets(np.c_[[prime_x], [prime_y]])
-                fig.suptitle(str(frame+1)+"/"+str(iterations)+" Best: "+str(round(self.find_prime()[1],3)))
+                fig.suptitle("Wolfs "+str(frame+1)+"/"+str(iterations)+" Best: "+str(round(self.find_prime()[1],3)))
                 if frame >=iterations-1:
                     ani.pause()
                 return dots, prime
 
-            writervideo = animation.PillowWriter(fps=15, bitrate=1800)
+            writervideo = animation.PillowWriter(fps=2, bitrate=1800)
             ani = animation.FuncAnimation(fig=fig, func=update, frames=iterations, interval = 500)
-            ani.save("latest.gif", writer = writervideo)
+            ani.save("gifs/wolf_latest.gif", writer = writervideo)
             #plt.show()
 
         else:
