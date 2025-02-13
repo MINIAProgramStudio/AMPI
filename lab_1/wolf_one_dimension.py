@@ -93,9 +93,9 @@ class OneDimentionalPackOfWolfs:
                 return dots, prime
 
             writervideo = animation.PillowWriter(fps=2, bitrate=1800)
-            ani = animation.FuncAnimation(fig=fig, func=update, frames=iterations, interval = 500)
-            ani.save("gifs/wolf_latest.gif", writer = writervideo)
-            #plt.show()
+            # ani = animation.FuncAnimation(fig=fig, func=update, frames=iterations, interval = 500)
+            # ani.save("gifs/wolf_latest.gif", writer = writervideo)
+            plt.show()
 
         else:
             for i in tqdm(range(iterations)):
