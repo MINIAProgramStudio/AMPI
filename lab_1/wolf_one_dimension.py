@@ -6,12 +6,12 @@ from tqdm import tqdm
 import numpy as np
 import math
 
-class OneDimentionalWolf:
+class OneDimensionalWolf:
     def __init__(self, x, speed):
         self.x = x
         self.speed = speed
 
-class OneDimentionalPackOfWolfs:
+class OneDimensionalPackOfWolfs:
     def __init__(self, x_min, x_max, func, n_of_wolfs, speed_func = None, seeking_min = False):
         self.x_min = x_min
         self.x_max = x_max
@@ -22,12 +22,12 @@ class OneDimentionalPackOfWolfs:
         self.speed_func = speed_func
         self.seeking_min = seeking_min
         if n_of_wolfs >= 2:
-            self.wolfs = [OneDimentionalWolf(x_min, self.speed_func(random())), # Вовк на мінімальному значенні
-                          OneDimentionalWolf(x_max, self.speed_func(random())) # Вовк на максимальному значенні
+            self.wolfs = [OneDimensionalWolf(x_min, self.speed_func(random())), # Вовк на мінімальному значенні
+                          OneDimensionalWolf(x_max, self.speed_func(random())) # Вовк на максимальному значенні
                           ]
             if n_of_wolfs >=3:
                 for i in range(2,n_of_wolfs):
-                    self.wolfs.append(OneDimentionalWolf(random()*(x_max-x_min)+x_min, self.speed_func(random()))) # Вовки на випадкових позиціях
+                    self.wolfs.append(OneDimensionalWolf(random()*(x_max-x_min)+x_min, self.speed_func(random()))) # Вовки на випадкових позиціях
         else:
             raise Exception("too few wolfs")
 
@@ -82,9 +82,6 @@ class OneDimentionalPackOfWolfs:
                 prime_x = [self.wolfs[self.find_prime()[0]].x]
                 prime_y = [self.find_prime()[1]]
 
-                dots.set_xdata = dots_x
-                dots.set_ydata = dots_y
-
                 dots.set_offsets(np.c_[dots_x, dots_y])
                 prime.set_offsets(np.c_[[prime_x], [prime_y]])
                 fig.suptitle("Wolfs "+str(frame+1)+"/"+str(iterations)+" Best: "+str(round(self.find_prime()[1],3)))
@@ -93,7 +90,7 @@ class OneDimentionalPackOfWolfs:
                 return dots, prime
 
             writervideo = animation.PillowWriter(fps=2, bitrate=1800)
-            # ani = animation.FuncAnimation(fig=fig, func=update, frames=iterations, interval = 500)
+            ani = animation.FuncAnimation(fig=fig, func=update, frames=iterations, interval = 500)
             # ani.save("gifs/wolf_latest.gif", writer = writervideo)
             plt.show()
 
