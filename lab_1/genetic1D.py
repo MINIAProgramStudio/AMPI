@@ -4,7 +4,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
-class OneDimentionalPop:
+class Pop1D:
     def __init__(self, bit_length, dna = None):
         if dna == None:
             self.dna = []
@@ -29,7 +29,7 @@ class OneDimentionalPop:
         i = int(random()*len(self.dna))
         self.dna[i] = not self.dna[i]
 
-class OneDimentionalGeneticSolver:
+class Genetic1D:
     def __init__(self, x_min, x_max, func, pop_size, children_count, bit_length = 8, seeking_min = False, mutation_prob = 0.1):
         self.x_min = x_min
         self.x_max = x_max
@@ -42,7 +42,7 @@ class OneDimentionalGeneticSolver:
 
         self.population = []
         for i in range(pop_size):
-            self.population.append(OneDimentionalPop(self.bit_length))
+            self.population.append(Pop1D(self.bit_length))
 
     def evaluate_dna(self, pop):
         x = int(str(pop),2)*(self.x_max-self.x_min)/(2**self.bit_length)+self.x_min
@@ -64,8 +64,8 @@ class OneDimentionalGeneticSolver:
             dna_2 = old_pop[int(random()*len(old_pop))]
             while dna_2 == dna_1:
                 dna_2 = old_pop[int(random() * len(old_pop))]
-            child_1 = OneDimentionalPop(self.bit_length, dna_1.dna[:separator] + dna_2.dna[separator:])
-            child_2 = OneDimentionalPop(self.bit_length,dna_2.dna[:separator] + dna_1.dna[separator:])
+            child_1 = Pop1D(self.bit_length, dna_1.dna[:separator] + dna_2.dna[separator:])
+            child_2 = Pop1D(self.bit_length,dna_2.dna[:separator] + dna_1.dna[separator:])
             self.population.append(child_1)
             self.population.append(child_2)
         for i in range(1,len(self.population)):

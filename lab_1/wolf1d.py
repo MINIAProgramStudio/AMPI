@@ -6,12 +6,12 @@ from tqdm import tqdm
 import numpy as np
 import math
 
-class OneDimensionalWolf:
+class Wolf1D:
     def __init__(self, x, speed):
         self.x = x
         self.speed = speed
 
-class OneDimensionalPackOfWolfs:
+class Pack1D:
     def __init__(self, x_min, x_max, func, n_of_wolfs, speed_func = None, seeking_min = False):
         self.x_min = x_min
         self.x_max = x_max
@@ -22,12 +22,12 @@ class OneDimensionalPackOfWolfs:
         self.speed_func = speed_func
         self.seeking_min = seeking_min
         if n_of_wolfs >= 2:
-            self.wolfs = [OneDimensionalWolf(x_min, self.speed_func(random())), # Вовк на мінімальному значенні
-                          OneDimensionalWolf(x_max, self.speed_func(random())) # Вовк на максимальному значенні
+            self.wolfs = [Wolf1D(x_min, self.speed_func(random())), # Вовк на мінімальному значенні
+                          Wolf1D(x_max, self.speed_func(random())) # Вовк на максимальному значенні
                           ]
             if n_of_wolfs >=3:
                 for i in range(2,n_of_wolfs):
-                    self.wolfs.append(OneDimensionalWolf(random()*(x_max-x_min)+x_min, self.speed_func(random()))) # Вовки на випадкових позиціях
+                    self.wolfs.append(Wolf1D(random()*(x_max-x_min)+x_min, self.speed_func(random()))) # Вовки на випадкових позиціях
         else:
             raise Exception("too few wolfs")
 
