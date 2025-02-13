@@ -2,7 +2,6 @@ from email.parser import Parser
 from random import random
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-from tqdm import tqdm
 import numpy as np
 import math
 
@@ -95,6 +94,6 @@ class Pack1D:
             plt.show()
 
         else:
-            for i in tqdm(range(iterations)):
+            for i in range(iterations):
                 self.move()
             return [self.wolfs[self.find_prime()[0]].x, self.find_prime()[1]]

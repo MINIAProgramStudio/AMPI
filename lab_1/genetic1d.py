@@ -4,73 +4,53 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
-class Pop1D:
-    def __init__(self, bit_length, dna = None):
-        if dna == None:
-            self.dna = []
-            for i in range(bit_length):
-                self.dna.append(False)
-        else:
-            self.dna = dna
-        for i in range(bit_length):
-           if random() > 0.5:
-               self.dna[i] = True
 
-    def __str__(self):
-        output = ""
-        for i in self.dna:
-            if i:
-                output += "1"
-            else:
-                output += "0"
-        return output
-
-    def mutate(self):
-        i = int(random()*len(self.dna))
-        self.dna[i] = not self.dna[i]
 
 class Genetic1D:
     def __init__(self, x_min, x_max, func, pop_size, children_count, bit_length = 8, seeking_min = False, mutation_prob = 0.1):
         self.x_min = x_min
         self.x_max = x_max
-        self.func = func
+
         self.pop_size = pop_size
         self.children_count = children_count
         self.bit_length = bit_length
         self.seeking_min = seeking_min
         self.mutation_prob = mutation_prob
+        def func2(dna):
+            return func(self.dna_pos(dna))
+        self.func = list(map(func2, range(2**bit_length)))
 
-        self.population = []
-        for i in range(pop_size):
-            self.population.append(Pop1D(self.bit_length))
+        self.population = [0]*(self.pop_size + self.children_count)
+        for i in range(pop_size+children_count):
+            self.population[i] = int(random()*2**bit_length)
+        self.selection()
 
-    def evaluate_dna(self, pop):
-        x = int(str(pop),2)*(self.x_max-self.x_min)/(2**self.bit_length)+self.x_min
-        return self.func(x)
+    def mutate_dna(self, dna):
+        return dna ^ 2 ** int(random() * self.bit_length)
 
-    def dna_pos(self, pop):
-        return int(str(pop), 2) * (self.x_max - self.x_min) / (2 ** self.bit_length) + self.x_min
+    def evaluate_dna(self, dna):
+        return self.func[dna]
+
+    def dna_pos(self, dna):
+        return dna * (self.x_max - self.x_min) / (2 ** self.bit_length) + self.x_min
 
     def selection(self):
-        self.population.sort(reverse=not self.seeking_min, key=self.evaluate_dna)
-        self.population = self.population[:self.pop_size]
+        self.population.sort(reverse= not self.seeking_min, key=self.evaluate_dna)
 
     def iteration(self):
         # create children
         old_pop = self.population
+        separator = int(self.bit_length / 2)
         for i in range(int(self.children_count/2)):
-            separator = int(random()*(self.bit_length))
-            dna_1 = old_pop[int(random()*len(old_pop))]
             dna_2 = old_pop[int(random()*len(old_pop))]
-            while dna_2 == dna_1:
-                dna_2 = old_pop[int(random() * len(old_pop))]
-            child_1 = Pop1D(self.bit_length, dna_1.dna[:separator] + dna_2.dna[separator:])
-            child_2 = Pop1D(self.bit_length,dna_2.dna[:separator] + dna_1.dna[separator:])
-            self.population.append(child_1)
-            self.population.append(child_2)
+            dna_1 = old_pop[int(random()*len(old_pop))]
+            child_1 = dna_1 & (2**separator-1) + dna_2 & (2**self.bit_length-2**separator)
+            child_2 = dna_2 & (2**separator-1) + dna_1 & (2**self.bit_length-2**separator)
+            self.population[self.pop_size + i] = child_1
+            self.population[self.pop_size + i + 1] = child_2
         for i in range(1,len(self.population)):
             if random()<self.mutation_prob:
-                self.population[i].mutate()
+                self.population[i] = self.mutate_dna(self.population[i])
         self.selection()
 
     def solve(self, iterations = 100, animate = False):
@@ -112,6 +92,6 @@ class Genetic1D:
             # ani.save("gifs/genetic_latest.gif", writer=writervideo)
             plt.show()
         else:
-            for i in tqdm(range(iterations)):
+            for i in range(iterations):
                 self.iteration()
         return self.evaluate_dna(self.population[0])
