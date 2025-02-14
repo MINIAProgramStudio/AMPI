@@ -1,5 +1,6 @@
 from random import random
 
+import randompoints as rp
 import wolf1d as wolf1d
 import genetic1d as genetic1d
 import wolf2d
@@ -29,8 +30,8 @@ random_time = 0
 
 for i in tqdm(range(repeat1d), desc="random1d"):
     start = time()
-    WolfPack1d = wolf1d.Pack1D(x_min,x_max,garmonic,random_points_number, seeking_min=True)
-    random_points_best_value += WolfPack1d.find_prime()[1]
+
+    random_points_best_value += rp.randomsolver([[x_min, x_max]], garmonic, random_points_number, seeking_min=True)
     stop = time()
     random_time += stop-start
 
@@ -249,8 +250,7 @@ genetic_iterations = 20
 genetic_best_value = 0
 genetic_solve_time = 0
 genetic_startup_time = 0
-for i in tqdm(range(repeat1d)):
-#for i in tqdm(range(repeat1d), desc="genetic1d"):
+for i in tqdm(range(repeat1d), desc="genetic1d"):
     start = time()
     geneticsolver1d = genetic1d.Genetic1D(x_min, x_max, parametric, genetic_pop_size, genetic_pop_size, genetic_bits)
     stop = time()
