@@ -16,10 +16,8 @@ class Genetic1D:
         self.bit_length = bit_length
         self.seeking_min = seeking_min
         self.mutation_prob = mutation_prob
-        def func2(dna):
-            return func(self.dna_pos(dna))
-        self.func = list(map(func2, range(2**bit_length)))
-
+        self.func = func
+        self.memory = {}
         self.population = [0]*(self.pop_size + self.children_count)
         for i in range(pop_size+children_count):
             self.population[i] = int(random()*2**bit_length)
@@ -29,7 +27,9 @@ class Genetic1D:
         return dna ^ 2 ** int(random() * self.bit_length)
 
     def evaluate_dna(self, dna):
-        return self.func[dna]
+        if dna not in self.memory.keys():
+            self.memory[dna] = self.func(self.dna_pos(dna))
+        return self.memory[dna]
 
     def dna_pos(self, dna):
         return dna * (self.x_max - self.x_min) / (2 ** self.bit_length) + self.x_min
