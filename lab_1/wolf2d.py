@@ -111,6 +111,6 @@ class Pack2D:
             plt.show()
 
         else:
-            for i in tqdm(range(iterations)):
+            for i in range(iterations):
                 self.move()
             return [self.wolfs[self.find_prime()[0]].x, self.find_prime()[1]]
