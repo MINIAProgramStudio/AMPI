@@ -5,6 +5,7 @@ import matplotlib.animation as animation
 from tqdm import tqdm
 import numpy as np
 import math
+from matplotlib import cm
 
 class Wolf2D:
     def __init__(self, x, y, speed):
@@ -75,13 +76,14 @@ class Pack2D:
             prime_y = [self.wolfs[self.find_prime()[0]].y]
             prime_z = [self.find_prime()[1]]
 
-            func_x = np.linspace(self.x_min, self.x_max, 25)
-            func_y = np.linspace(self.y_min, self.y_max, 25)
+            func_x = np.linspace(self.x_min, self.x_max, 100)
+            func_y = np.linspace(self.y_min, self.y_max, 100)
             FUNC_X, FUNC_Y = np.meshgrid(func_x, func_y)
 
             FUNC_Z = self.func(FUNC_X, FUNC_Y)
 
-            wireframe = ax.plot_wireframe(FUNC_X, FUNC_Y, FUNC_Z, color = "black", zorder = 0)
+            surface = ax.plot_surface(FUNC_X, FUNC_Y, FUNC_Z, cmap=cm.coolwarm,
+                       linewidth=0, antialiased=False, zorder = 0)
             dots = ax.scatter(dots_x, dots_y, dots_z, c="#ff0000", zorder = 5)
             prime = ax.scatter(prime_x, prime_y, prime_z, s=75, c = "#ffff00", zorder = 10)
 

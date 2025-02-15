@@ -12,7 +12,7 @@ result_table = PTC.PythonTableConsole([
     ["No", "Функція","Метод пошуку","Параметри","Час створення","Час пошуку", "Загальний час","Результат в середньому", "Найкращий можливий результат", "Відносна середня похибка, %"]
 ])
 
-repeat1d = 10**2
+repeat1d = 10**3
 
 x_min = -100
 x_max = 100
@@ -205,6 +205,103 @@ result_table.contains.append([
     result_table.contains[-1][0]+1,
     #result_table.contains[-1][0]+1,
     "Ерклі",
+    "Генетичний",
+    "Поп.: " + str(genetic_pop_size) + ", Біт: " + str(genetic_bits)+ ", Іт.: "+str(genetic_iterations),
+    str(round(genetic_startup_time*10**3/repeat1d, 1)) + "ms",
+    str(round(genetic_solve_time*10**3/repeat1d, 1)) + "ms",
+    str(round((genetic_solve_time+genetic_startup_time)*10**3/repeat1d, 1)) + "ms",
+    round(genetic_best_value/repeat1d, 3),
+    0,
+    "N/A"
+])
+
+x_min = -5.12
+x_max = 5.12
+y_min = -5.12
+y_max = 5.12
+
+def rastring2d(x,y):
+    return 20 + (x**2 - 10*np.cos(2*np.pi*x)) + (y**2 - 10*np.cos(2*np.pi*y))
+
+# метод випадкових точок
+random_points_number = 2*10**4
+random_points_best_value = 0
+random_time = 0
+
+for i in tqdm(range(repeat1d), desc="random2d"):
+    start = time()
+
+    random_points_best_value += rp.randomsolver([[x_min, x_max],[y_min, y_max]], rastring2d, random_points_number, seeking_min=True)
+    stop = time()
+    random_time += stop-start
+
+result_table.contains.append([
+    result_table.contains[-1][0]+1,
+    "Растринга",
+    "Випадкові точки",
+    "Точок: " + str(random_points_number),
+    0,
+    str(round(random_time*10**3/repeat1d, 1)) + "ms",
+    str(round(random_time*10**3/repeat1d, 1)) + "ms",
+    round(random_points_best_value/repeat1d, 3),
+    0,
+    "N/A"
+])
+
+
+
+wolf_number = 100
+wolf_iterations = 200
+wolf_best_value = 0
+wolf_solve_time = 0
+wolf_startup_time=0
+
+for i in tqdm(range(repeat1d), desc="wolf2d"):
+    start = time()
+    pack2d = wolf2d.Pack2D(x_min, x_max, y_min, y_max, rastring2d, wolf_number, seeking_min=True)
+    stop = time()
+    wolf_startup_time +=stop-start
+    start = time()
+    pack2d.solve(wolf_iterations)
+    wolf_best_value += pack2d.find_prime()[1]
+    stop = time()
+    wolf_solve_time += stop-start
+
+result_table.contains.append([
+    result_table.contains[-1][0]+1,
+    "Растринга",
+    "Вовки",
+    "Вовків: " + str(wolf_number) + ", Ітерацій: " + str(wolf_iterations),
+    str(round(wolf_startup_time * 10 ** 3 / repeat1d, 1)) + "ms",
+    str(round(wolf_solve_time * 10 ** 3 / repeat1d, 1)) + "ms",
+    str(round((wolf_startup_time + wolf_solve_time) * 10 ** 3 / repeat1d, 1)) + "ms",
+    round(wolf_best_value/repeat1d, 3),
+    0,
+    "N/A"
+])
+
+genetic_pop_size = 100
+genetic_children = 1000
+genetic_bits = 16
+genetic_iterations = 100
+genetic_best_value = 0
+genetic_solve_time = 0
+genetic_startup_time = 0
+
+for i in tqdm(range(repeat1d), desc="genetic2d"):
+    start = time()
+    geneticsolver2d = genetic2d.Genetic2D(x_min, x_max, y_min, y_max, rastring2d, genetic_pop_size, genetic_children, genetic_bits, seeking_min=True)
+    stop = time()
+    genetic_startup_time += stop-start
+    start = time()
+    genetic_best_value += geneticsolver2d.solve(genetic_iterations)
+    stop = time()
+    genetic_solve_time += stop-start
+
+result_table.contains.append([
+    result_table.contains[-1][0]+1,
+    #result_table.contains[-1][0]+1,
+    "Растринга",
     "Генетичний",
     "Поп.: " + str(genetic_pop_size) + ", Біт: " + str(genetic_bits)+ ", Іт.: "+str(genetic_iterations),
     str(round(genetic_startup_time*10**3/repeat1d, 1)) + "ms",
