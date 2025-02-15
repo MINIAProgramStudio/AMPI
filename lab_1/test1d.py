@@ -276,3 +276,16 @@ result_table.contains.append([
 
 result_table.transpose()
 print(result_table)
+
+
+WolfPack1d = wolf1d.Pack1D(x_min,x_max,garmonic,wolf_number)
+WolfPack1d.solve(wolf_iterations, True)
+
+geneticsolver1d = genetic1d.Genetic1D(x_min, x_max, garmonic, genetic_pop_size, genetic_pop_size, genetic_bits)
+geneticsolver1d.solve(genetic_iterations, True)
+
+WolfPack1d = wolf1d.Pack1D(x_min,x_max,parametric,wolf_number)
+WolfPack1d.solve(wolf_iterations, True)
+
+geneticsolver1d = genetic1d.Genetic1D(x_min, x_max, parametric, genetic_pop_size, genetic_pop_size, genetic_bits)
+geneticsolver1d.solve(genetic_iterations, True)
