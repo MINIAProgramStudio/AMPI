@@ -13,6 +13,7 @@ class PSOParticle:
         self.seeking_min = seeking_min
         self.best_val = self.func(self.pos)
 
+
     def update(self, global_best_pos, r1, r2):
         # оновлення швидкості
         self.speed = self.speed + self.c["a1"] * (self.best_pos - self.pos) * r1 + self.c["a2"] * (global_best_pos - self.pos) * r2
@@ -37,7 +38,6 @@ class PSOParticle:
 coef list:
 "a1": ,#acceleration number
 "a2": ,#acceleration number
-"max_iter": ,#max iterations
 "pop_size": ,#population size
 "dim": ,#dimensions
 "pos_min": ,#vector of minimum positions
@@ -58,7 +58,16 @@ class PSOSolver:
             best_i = np.argmin(personal_best)
         else:
             best_i = np.argmax(personal_best)
-        print(best_i)
+        self.best_pos = self.pop[best_i].best_pos
+        self.best_val = self.pop[best_i].best_val
+
+    def reset(self):
+        self.pop = [PSOParticle(self.c, self.func, self.seeking_min) for i in range(self.c["pop_size"])]
+        personal_best = [particle.best_val for particle in self.pop]
+        if self.seeking_min:
+            best_i = np.argmin(personal_best)
+        else:
+            best_i = np.argmax(personal_best)
         self.best_pos = self.pop[best_i].best_pos
         self.best_val = self.pop[best_i].best_val
 
@@ -76,11 +85,40 @@ class PSOSolver:
         self.best_val = new_best_val
         self.best_pos = new_best_pos
 
-    def solve(self, animate = False, target = 0):
-        if animate:
-            if self.c["dim"] == 2:
-                fig = plt.figure()
-                ax = plt.axes(projection="3d", computed_zorder=False)
+    def solve(self, iterations = 100, progressbar = False):
+        iterator = range(iterations)
+        if progressbar:
+            iterator = tqdm(iterator, desc = "PSO")
+        for iter in iterator:
+            self.iter()
+        return (self.best_val, self.best_pos)
+
+    def anisolve(self, iterations = 100, save = False):
+        if self.c["dim"] == 2:
+            fig = plt.figure()
+            ax = plt.axes(projection="3d", computed_zorder=False)
+            dots_x = [particle.pos[0] for particle in self.pop]
+            dots_y = [particle.pos[1] for particle in self.pop]
+            dots_z = [self.func(particle.pos) for particle in self.pop]
+            prime_x = [self.best_pos[0]]
+            prime_y = [self.best_pos[1]]
+            prime_z = [self.best_val]
+
+            func_x = np.linspace(self.c["pos_min"][0], self.c["pos_max"][0], 100)
+            func_y = np.linspace(self.c["pos_min"][1], self.c["pos_max"][1], 100)
+            FUNC_X, FUNC_Y = np.meshgrid(func_x, func_y)
+
+            FUNC_Z = self.func([FUNC_X, FUNC_Y])
+
+            surface = ax.plot_surface(FUNC_X, FUNC_Y, FUNC_Z, cmap=cm.coolwarm,
+                                      linewidth=0, antialiased=False, zorder=0)
+            dots = ax.scatter(dots_x, dots_y, dots_z, c="#ff0000", zorder=5)
+            prime = ax.scatter(prime_x, prime_y, prime_z, s=75, c="#ffff00", zorder=10)
+
+            fig.suptitle("PSO " + str(0) + "/" + str(iterations) + " Best: " + str(round(self.best_val, 3)))
+
+            def update(frame):
+                self.iter()
                 dots_x = [particle.pos[0] for particle in self.pop]
                 dots_y = [particle.pos[1] for particle in self.pop]
                 dots_z = [self.func(particle.pos) for particle in self.pop]
@@ -88,57 +126,45 @@ class PSOSolver:
                 prime_y = [self.best_pos[1]]
                 prime_z = [self.best_val]
 
-                func_x = np.linspace(self.c["pos_min"][0], self.c["pos_max"][0], 100)
-                func_y = np.linspace(self.c["pos_min"][1], self.c["pos_max"][1], 100)
-                FUNC_X, FUNC_Y = np.meshgrid(func_x, func_y)
+                dots.set_offsets(np.c_[dots_x, dots_y])
+                dots.set_3d_properties(dots_z, zdir='z')
+                prime.set_offsets(np.c_[prime_x, prime_y])
+                prime.set_3d_properties(prime_z, zdir='z')
+                fig.suptitle(
+                    "PSO " + str(frame + 1) + "/" + str(iterations) + " Best: " + str(round(self.best_val, 3)))
+                if frame >= iterations - 1:
+                    ani.pause()
+                return dots, prime
 
-                FUNC_Z = self.func([FUNC_X, FUNC_Y])
-
-                surface = ax.plot_surface(FUNC_X, FUNC_Y, FUNC_Z, cmap=cm.coolwarm,
-                                          linewidth=0, antialiased=False, zorder=0)
-                dots = ax.scatter(dots_x, dots_y, dots_z, c="#ff0000", zorder=5)
-                prime = ax.scatter(prime_x, prime_y, prime_z, s=75, c="#ffff00", zorder=10)
-
-                fig.suptitle("PSO " + str(0) + "/" + str(self.c["max_iter"]) + " Best: " + str(round(self.best_val, 3)))
-
-                def update(frame):
-                    self.iter()
-                    dots_x = [particle.pos[0] for particle in self.pop]
-                    dots_y = [particle.pos[1] for particle in self.pop]
-                    dots_z = [self.func(particle.pos) for particle in self.pop]
-                    prime_x = [self.best_pos[0]]
-                    prime_y = [self.best_pos[1]]
-                    prime_z = [self.best_val]
-
-                    dots.set_offsets(np.c_[dots_x, dots_y])
-                    dots.set_3d_properties(dots_z, zdir='z')
-                    prime.set_offsets(np.c_[prime_x, prime_y])
-                    prime.set_3d_properties(prime_z, zdir='z')
-                    fig.suptitle(
-                        "PSO " + str(frame + 1) + "/" + str(self.c["max_iter"]) + " Best: " + str(round(self.best_val, 3)))
-                    if frame >= self.c["max_iter"] - 1:
-                        ani.pause()
-                    return dots, prime
-
-                # writervideo = animation.PillowWriter(fps=2, bitrate=1800)
-                ani = animation.FuncAnimation(fig=fig, func=update, frames=self.c["max_iter"], interval=50)
-                # ani.save("gifs/wolf_latest.gif", writer = writervideo)
-                plt.show()
-                return (self.best_val, self.best_pos)
-            else:
-                px = list(range(self.c["max_iter"] + 1))
-                py = [abs(self.best_val - target)]
-                fig, ax = plt.subplots()
-                for i in range(self.c["max_iter"]):
-                    self.iter()
-                    py.append(abs(self.best_val - target))
-
-                ax.set_yscale("log")
-
-                graph = ax.plot(px, py)[0]
-                plt.show()
-                return (self.best_val, self.best_pos)
-        else:
-            for iter in tqdm(range(self.c["max_iter"]), desc="PSO"):
-                self.iter()
+            ani = animation.FuncAnimation(fig=fig, func=update, frames=iterations, interval=50)
+            if save:
+                writervideo = animation.PillowWriter(fps=2, bitrate=1800)
+                ani.save("gifs/pso_latest.gif", writer = writervideo)
+            plt.show()
             return (self.best_val, self.best_pos)
+        else:
+            px = list(range(iterations + 1))
+            py = [abs(self.best_val)]
+            fig, ax = plt.subplots()
+            for i in range(iterations):
+                self.iter()
+                py.append(abs(self.best_val))
+
+            ax.set_yscale("log")
+
+            graph = ax.plot(px, py)[0]
+            if save:
+                plt.savefig("gifs/pso_lates.png")
+            plt.show()
+            return (self.best_val, self.best_pos)
+
+    def solve_stats(self, iterations = 100, progressbar = False):
+        output = []
+        iterator = range(iterations)
+        if progressbar:
+            iterator = tqdm(iterator, desc="PSO")
+        for _ in iterator:
+            output.append(self.best_val)
+            self.iter()
+        output.append(self.best_val)
+        return (self.best_val, self.best_pos, output)
