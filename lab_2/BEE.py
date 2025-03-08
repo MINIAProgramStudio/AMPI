@@ -86,9 +86,9 @@ class BEEHive:
             dots_x = [bee[0] for bee in self.bees]
             dots_y = [bee[1] for bee in self.bees]
             dots_z = [self.func(bee) for bee in self.bees]
-            prime_x = [self.best_pos[0]]
-            prime_y = [self.best_pos[1]]
-            prime_z = [self.best_value]
+            prime_x = [self.bees[0][0]]
+            prime_y = [self.bees[0][1]]
+            prime_z = [self.func(self.bees[0])]
 
             func_x = np.linspace(self.c["pos_min"][0], self.c["pos_max"][0], 100)
             func_y = np.linspace(self.c["pos_min"][1], self.c["pos_max"][1], 100)
@@ -101,23 +101,23 @@ class BEEHive:
             dots = ax.scatter(dots_x, dots_y, dots_z, c="#ff0000", zorder=5)
             prime = ax.scatter(prime_x, prime_y, prime_z, s=75, c="#ffff00", zorder=10)
 
-            fig.suptitle("BEE " + str(0) + "/" + str(iterations) + " Best: " + str(round(self.best_value, 3)))
+            fig.suptitle("BEE " + str(0) + "/" + str(iterations) + " Best: " + str(round(self.func(self.bees[0]), 3)))
 
             def update(frame):
                 self.iter()
                 dots_x = [bee[0] for bee in self.bees]
                 dots_y = [bee[1] for bee in self.bees]
                 dots_z = [self.func(bee) for bee in self.bees]
-                prime_x = [self.best_pos[0]]
-                prime_y = [self.best_pos[1]]
-                prime_z = [self.best_value]
+                prime_x = [self.bees[0][0]]
+                prime_y = [self.bees[0][1]]
+                prime_z = [self.func(self.bees[0])]
 
                 dots.set_offsets(np.c_[dots_x, dots_y])
                 dots.set_3d_properties(dots_z, zdir='z')
                 prime.set_offsets(np.c_[prime_x, prime_y])
                 prime.set_3d_properties(prime_z, zdir='z')
                 fig.suptitle(
-                    "BEE " + str(frame + 1) + "/" + str(iterations) + " Best: " + str(round(self.best_value, 3)))
+                    "BEE " + str(frame + 1) + "/" + str(iterations) + " Best: " + str(round(self.func(self.bees[0]), 3)))
                 if frame >= iterations - 1:
                     ani.pause()
                 return dots, prime
