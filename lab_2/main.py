@@ -326,7 +326,7 @@ plt.plot(bee_x,bee_y, "r", label = "BEE")
 plt.plot(ff_x,ff_y, "g", label = "FF")
 plt.legend()
 plt.show()
-"""
+
 
 # task 5.1
 def func_5_1(pos):
@@ -426,6 +426,106 @@ ff = FFSolver({
 print(ff.anisolve())
 
 # 5_1 compare
+
+pso_y = test_mean(pso, 100, 25)
+bee_y = test_mean(bee, 100, 25)
+ff_y = test_mean(ff, 100, 25)
+
+
+plt.plot(range(len(pso_y)),pso_y, "b", label = "PSO")
+plt.plot(range(len(bee_y)), bee_y, "r", label = "BEE")
+plt.plot(range(len(ff_y)), ff_y, "g", label = "FF")
+plt.legend()
+plt.show()
+
+pso_x = test_time(pso, 100, 25)
+bee_x = test_time(bee, 100, 25)
+ff_x = test_time(ff, 100, 25)
+
+plt.plot(pso_x,range(len(pso_x)), "b", label = "PSO")
+plt.plot(bee_x,range(len(bee_x)), "r", label = "BEE")
+plt.plot(ff_x,range(len(ff_x)), "g", label = "FF")
+plt.legend()
+plt.show()
+
+plt.plot(pso_x,pso_y, "b", label = "PSO")
+plt.plot(bee_x,bee_y, "r", label = "BEE")
+plt.plot(ff_x,ff_y, "g", label = "FF")
+plt.legend()
+plt.show()
+"""
+
+# task 5.2
+
+def func_5_2(pos):
+    return (pos[2]+2)*pos[1]*pos[0]**2
+
+def lim_5_2_1(pos):
+    return 1 - (pos[1]**3*pos[2])/(7.178*pos[0]**4)
+
+def lim_5_2_2(pos):
+    return (4*pos[1]**2 - pos[0]*pos[1])/(12.566*pos[1]*pos[2]**3-pos[0]**4) + 1/(5.108*pos[0]**2)
+
+def lim_5_2_3(pos):
+    return 1 - 140.45*pos[0]/(pos[1]**2+pos[2])
+
+def lim_5_2_4(pos):
+    return (pos[1]+pos[2])/1.5 - 1
+
+lim_5_2 = FuncLim(func_5_2, [
+    [lim_5_2_1, 0, -2],
+    [lim_5_2_2, 0, -2],
+    [lim_5_2_3, 0, -2],
+    [lim_5_2_4, 0, -2],
+])
+
+l51_pos_min = np.array([0.005, 0.25, 2.0])
+l51_pos_max = np.array([2.0, 1.3, 15])
+
+# 5_2  anisolve
+
+pso = PSOSolver({
+"a1": 0.02,#acceleration number
+"a2": 0.03,#acceleration number
+"pop_size": 25,#population size
+"dim": 3,#dimensions
+"pos_min": l51_pos_min,#vector of minimum positions
+"pos_max": l51_pos_max,#vector of maximum positions
+"speed_min": np.array([-0.05]*3),#vector of min speed
+"speed_max": np.array([0.05]*3),#vector of max speed
+}, lim_5_2.func, True)
+
+print(pso.anisolve())
+
+bee = BEEHive({
+    "delta": 0.75,
+    "n_max": 0.34,
+    "alpha": 0.74,
+    "pop_size": 25,
+    "l_s": 20,
+    "l_es": 10,
+    "z_e": 5,
+    "z_o": 2,
+    "dim": 3,
+    "pos_min":  l51_pos_min,
+    "pos_max": l51_pos_max
+}, lim_5_2.func, True)
+
+print(bee.anisolve())
+
+ff = FFSolver({
+    "b_max": 3.22,
+    "gamma": 0.009,
+    "alpha": 0.981,
+    "pop_size": 25,
+    "pos_min": l51_pos_min,
+    "pos_max": l51_pos_max,
+    "dim": 3,
+}, lim_5_2.func, True)
+
+print(ff.anisolve())
+
+# 5_2 compare
 
 pso_y = test_mean(pso, 100, 25)
 bee_y = test_mean(bee, 100, 25)
