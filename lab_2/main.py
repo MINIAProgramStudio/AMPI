@@ -3,6 +3,7 @@ from PSO import PSOSolver
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 from BEE import BEEHive
+from FF import  FFSolver
 
 def test_mean(object, iterations, tests, desc = "test_mean"):
     output = []
@@ -10,6 +11,15 @@ def test_mean(object, iterations, tests, desc = "test_mean"):
         object.reset()
         output.append([
             object.solve_stats(iterations)[2]
+        ])
+    return np.mean(output, axis=0)[0]
+
+def test_time(object, iterations, tests, desc = "test_time"):
+    output = []
+    for _ in tqdm(range(tests), desc = desc):
+        object.reset()
+        output.append([
+            object.solve_time(iterations)[2]
         ])
     return np.mean(output, axis=0)[0]
 
@@ -36,6 +46,21 @@ def bee_opt(pos):
     result = _bee.solve(25)[0]
     return result
 
+
+
+def ff_opt(pos):
+    _ff = FFSolver({
+        "b_max": pos[0],
+        "gamma": pos[1],
+        "alpha": pos[2],
+        "pop_size": 25,
+        "pos_min": np.array([-5.12] * 2),
+        "pos_max": np.array([5.12] * 2),
+        "dim": 2,
+    }, rastring, True)
+    result = _ff.solve(25)[0]
+    return result
+"""
 pso_for_bee = PSOSolver({
 "a1": 0.05,#acceleration number
 "a2": 0.1,#acceleration number
@@ -48,6 +73,18 @@ pso_for_bee = PSOSolver({
 }, bee_opt, True)
 #print(pso_for_bee.solve(50, True))
 
+pso_for_ff = PSOSolver({
+"a1": 0.005,#acceleration number
+"a2": 0.01,#acceleration number
+"pop_size": 50,#population size
+"dim": 3,#dimensions
+"pos_min": np.array([0,0,0]),#vector of minimum positions
+"pos_max": np.array([5,1,1]),#vector of maximum positions
+"speed_min": np.array([-0.1]*3),#vector of min speed
+"speed_max": np.array([0.1]*3),#vector of max speed
+}, ff_opt, True)
+print(pso_for_ff.solve(200, True))
+"""
 
 pso = PSOSolver({
 "a1": 2,#acceleration number
@@ -76,11 +113,41 @@ bee = BEEHive({
     "pos_max": np.array([5.12]*2)
 }, rastring, True)
 
-print(bee.solve(100))
+print(bee.anisolve())
+
+ff = FFSolver({
+    "b_max": 3.22,
+    "gamma": 0.009,
+    "alpha": 0.981,
+    "pop_size": 25,
+    "pos_min": np.array([-5.12]*2),
+    "pos_max": np.array([5.12]*2),
+    "dim": 2,
+}, rastring, True)
+
+print(ff.anisolve())
+
 
 pso_y = test_mean(pso, 100, 100)
 bee_y = test_mean(bee, 100, 100)
+ff_y = test_mean(ff, 100, 100)
+
 
 plt.plot(range(len(pso_y)),pso_y, "b")
 plt.plot(range(len(bee_y)), bee_y, "r")
+plt.plot(range(len(ff_y)), ff_y, "g")
+plt.show()
+
+pso_x = test_time(pso, 100, 100)
+bee_x = test_time(bee, 100, 100)
+ff_x = test_time(ff, 100, 100)
+
+plt.plot(pso_x,range(len(pso_x)), "b")
+plt.plot(bee_x,range(len(bee_x)), "r")
+plt.plot(ff_x,range(len(ff_x)), "g")
+plt.show()
+
+plt.plot(pso_x,pso_y, "b")
+plt.plot(bee_x,bee_y, "r")
+plt.plot(ff_x,ff_y, "g")
 plt.show()

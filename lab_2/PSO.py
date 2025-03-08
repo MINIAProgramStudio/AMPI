@@ -2,6 +2,7 @@ import numpy as np
 from tqdm import tqdm
 from matplotlib import pyplot as plt
 from matplotlib import animation, cm
+from time import time
 
 class PSOParticle:
     def __init__(self, coef, func, seeking_min):
@@ -160,6 +161,7 @@ class PSOSolver:
 
     def solve_stats(self, iterations = 100, progressbar = False):
         output = []
+
         iterator = range(iterations)
         if progressbar:
             iterator = tqdm(iterator, desc="PSO")
@@ -167,4 +169,17 @@ class PSOSolver:
             output.append(self.best_val)
             self.iter()
         output.append(self.best_val)
+        return (self.best_val, self.best_pos, output)
+
+    def solve_time(self, iterations = 100, progressbar = False):
+        output = []
+
+        iterator = range(iterations)
+        if progressbar:
+            iterator = tqdm(iterator, desc="PSO")
+        start = time()
+        for _ in iterator:
+            output.append(time()-start)
+            self.iter()
+        output.append(time()-start)
         return (self.best_val, self.best_pos, output)

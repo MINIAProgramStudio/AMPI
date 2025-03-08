@@ -3,6 +3,7 @@ import numpy as np
 from tqdm import tqdm
 from matplotlib import pyplot as plt
 from matplotlib import animation, cm
+from time import time
 """
 coef list
 "delta": ,
@@ -78,6 +79,71 @@ class BEEHive:
         self.bees.sort(key=self.func, reverse=not self.seeking_min)
         return (self.func(self.bees[0]), self.bees[0])
 
+    def anisolve(self, iterations = 100, save = False):
+        if self.c["dim"] == 2:
+            fig = plt.figure()
+            ax = plt.axes(projection="3d", computed_zorder=False)
+            dots_x = [bee[0] for bee in self.bees]
+            dots_y = [bee[1] for bee in self.bees]
+            dots_z = [self.func(bee) for bee in self.bees]
+            prime_x = [self.best_pos[0]]
+            prime_y = [self.best_pos[1]]
+            prime_z = [self.best_value]
+
+            func_x = np.linspace(self.c["pos_min"][0], self.c["pos_max"][0], 100)
+            func_y = np.linspace(self.c["pos_min"][1], self.c["pos_max"][1], 100)
+            FUNC_X, FUNC_Y = np.meshgrid(func_x, func_y)
+
+            FUNC_Z = self.func([FUNC_X, FUNC_Y])
+
+            surface = ax.plot_surface(FUNC_X, FUNC_Y, FUNC_Z, cmap=cm.coolwarm,
+                                      linewidth=0, antialiased=False, zorder=0)
+            dots = ax.scatter(dots_x, dots_y, dots_z, c="#ff0000", zorder=5)
+            prime = ax.scatter(prime_x, prime_y, prime_z, s=75, c="#ffff00", zorder=10)
+
+            fig.suptitle("BEE " + str(0) + "/" + str(iterations) + " Best: " + str(round(self.best_value, 3)))
+
+            def update(frame):
+                self.iter()
+                dots_x = [bee[0] for bee in self.bees]
+                dots_y = [bee[1] for bee in self.bees]
+                dots_z = [self.func(bee) for bee in self.bees]
+                prime_x = [self.best_pos[0]]
+                prime_y = [self.best_pos[1]]
+                prime_z = [self.best_value]
+
+                dots.set_offsets(np.c_[dots_x, dots_y])
+                dots.set_3d_properties(dots_z, zdir='z')
+                prime.set_offsets(np.c_[prime_x, prime_y])
+                prime.set_3d_properties(prime_z, zdir='z')
+                fig.suptitle(
+                    "BEE " + str(frame + 1) + "/" + str(iterations) + " Best: " + str(round(self.best_value, 3)))
+                if frame >= iterations - 1:
+                    ani.pause()
+                return dots, prime
+
+            ani = animation.FuncAnimation(fig=fig, func=update, frames=iterations, interval=50)
+            if save:
+                writervideo = animation.PillowWriter(fps=2, bitrate=1800)
+                ani.save("gifs/pso_latest.gif", writer = writervideo)
+            plt.show()
+            return (self.best_value, self.best_pos)
+        else:
+            px = list(range(iterations + 1))
+            py = [abs(self.best_value)]
+            fig, ax = plt.subplots()
+            for i in range(iterations):
+                self.iter()
+                py.append(abs(self.best_value))
+
+            ax.set_yscale("log")
+
+            graph = ax.plot(px, py)[0]
+            if save:
+                plt.savefig("gifs/bee_lates.png")
+            plt.show()
+            return (self.best_value, self.best_pos)
+
     def solve_stats(self, iterations = 100, progressbar = False):
         output = []
         iterator = range(iterations)
@@ -88,4 +154,19 @@ class BEEHive:
             output.append(self.func(self.bees[0]))
             self.iter()
         output.append(self.func(self.bees[0]))
-        return (self.bees[0], self.best_pos, output)
+        return (self.func(self.bees[0]), self.bees[0], output)
+
+    def solve_time(self, iterations = 100, progressbar = False):
+        output = []
+
+        iterator = range(iterations)
+        if progressbar:
+            iterator = tqdm(iterator, desc="BEE")
+
+        self.bees.sort(key=self.func, reverse=not self.seeking_min)
+        start = time()
+        for _ in iterator:
+            output.append(time()-start)
+            self.iter()
+        output.append(time()-start)
+        return (self.func(self.bees[0]), self.bees[0], output)
