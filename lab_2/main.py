@@ -385,14 +385,14 @@ l51_pos_max = np.array([3.6, 0.8, 28, 8.3, 8.3, 3.9, 5.5])
 # 5_1  anisolve
 
 pso = PSOSolver({
-"a1": 2,#acceleration number
-"a2": 3,#acceleration number
-"pop_size": 25,#population size
+"a1": 0.02,#acceleration number
+"a2": 0.03,#acceleration number
+"pop_size": 100,#population size
 "dim": 7,#dimensions
 "pos_min": l51_pos_min,#vector of minimum positions
 "pos_max": l51_pos_max,#vector of maximum positions
-"speed_min": np.array([-0.5]*7),#vector of min speed
-"speed_max": np.array([0.5]*7),#vector of max speed
+"speed_min": np.array([-0.05]*7),#vector of min speed
+"speed_max": np.array([0.05]*7),#vector of max speed
 }, lim_5_1.func, True)
 
 print(pso.anisolve())
