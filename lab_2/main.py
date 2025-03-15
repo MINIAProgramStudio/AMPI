@@ -78,7 +78,7 @@ def ff_opt(pos):
         "alpha": pos[2],
         "pop_size": 25,
         "pos_min": np.array([-5.12] * 2),
-        "pos_max": np.array([5.12] * 2),
+        "pos_max": np.array([15.12] * 2),
         "dim": 2,
     }, rastring, True)
     result = _ff.solve(25)[0]
@@ -108,7 +108,7 @@ pso_for_ff = PSOSolver({
 }, ff_opt, True)
 print(pso_for_ff.solve(200, True))
 """
-
+"""
 # rastring anisolve
 """
 pso = PSOSolver({
@@ -117,7 +117,7 @@ pso = PSOSolver({
 "pop_size": 25,#population size
 "dim": 2,#dimensions
 "pos_min": np.array([-5.12]*2),#vector of minimum positions
-"pos_max": np.array([5.12]*2),#vector of maximum positions
+"pos_max": np.array([15.12]*2),#vector of maximum positions
 "speed_min": np.array([-0.5]*2),#vector of min speed
 "speed_max": np.array([0.5]*2),#vector of max speed
 }, rastring, True)
@@ -135,7 +135,7 @@ bee = BEEHive({
     "z_o": 2,
     "dim": 2,
     "pos_min":  np.array([-5.12]*2),
-    "pos_max": np.array([5.12]*2)
+    "pos_max": np.array([15.12]*2)
 }, rastring, True)
 
 print(bee.anisolve())
@@ -146,7 +146,7 @@ ff = FFSolver({
     "alpha": 0.981,
     "pop_size": 25,
     "pos_min": np.array([-5.12]*2),
-    "pos_max": np.array([5.12]*2),
+    "pos_max": np.array([15.12]*2),
     "dim": 2,
 }, rastring, True)
 
@@ -453,7 +453,7 @@ plt.plot(bee_x,bee_y, "r", label = "BEE")
 plt.plot(ff_x,ff_y, "g", label = "FF")
 plt.legend()
 plt.show()
-"""
+
 
 # task 5.2
 
