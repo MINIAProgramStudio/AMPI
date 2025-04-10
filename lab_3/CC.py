@@ -69,7 +69,7 @@ class CC:
             iterator = tqdm(iterator, desc="СС")
         for _ in iterator:
             self.iterate()
-            output.append(self.best_val)
-        output.append(self.best_val)
+            output.append(self.best_val[0])
+        output.append(self.best_val[0])
         return (self.best_val, self.best_pos, output)
 
