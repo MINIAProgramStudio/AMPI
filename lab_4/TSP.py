@@ -20,7 +20,7 @@ class TSP:
         if init_progressbar:
             matrix_iterator = tqdm(matrix_iterator, desc = "TSP calculating distances")
         self.matrix = np.array([
-            [np.sqrt(np.sum(np.pow(self.vertices[i]+self.vertices[j], 2))) for j in range(vertices)] for i in matrix_iterator
+            [np.sqrt(np.sum(np.power(self.vertices[i]+self.vertices[j], 2))) for j in range(vertices)] for i in matrix_iterator
         ])
 
     def check_path(self, vertices_list):
