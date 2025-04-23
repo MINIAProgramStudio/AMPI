@@ -4,7 +4,7 @@ from tqdm import tqdm
 from turtle import Turtle
 import turtle
 class TSP:
-    def __init__(self, vertices, circle = True, init_progressbar = True):
+    def __init__(self, vertices, circle = True, init_progressbar = False):
         self.screen = turtle.Screen()
         self.circle = circle
         if circle:
