@@ -5,6 +5,7 @@ from turtle import Turtle
 import turtle
 class TSP:
     def __init__(self, vertices, circle = True, init_progressbar = True):
+        self.screen = turtle.Screen()
         self.circle = circle
         if circle:
             circle_iterator = range(vertices)
@@ -20,23 +21,28 @@ class TSP:
         if init_progressbar:
             matrix_iterator = tqdm(matrix_iterator, desc = "TSP calculating distances")
         self.matrix = np.array([
-            [np.sqrt(np.sum(np.power(self.vertices[i]+self.vertices[j], 2))) for j in range(vertices)] for i in matrix_iterator
+            [np.sqrt(np.sum(np.power(self.vertices[i]-self.vertices[j], 2))) for j in range(vertices)] for i in matrix_iterator
         ])
+
+    def reset_screens(self):
+        for t in self.screen.turtles():
+            t.reset()
+            t.hideturtle()
 
     def check_path(self, vertices_list):
         if len(vertices_list) < 2:
             raise Exception("TSP.check_path ERROR: path must be at least two vertices long")
-        paths = [self.matrix[vertices_list[i]][vertices_list[i+1]] for i in range(len(self.vertices)-1)]
-        return sum(paths) + self.matrix[vertices_list[-1], vertices_list[0]]
+        edges = [self.matrix[vertices_list[i]][vertices_list[i+1]] for i in range(len(vertices_list)-1)]
+        return sum(edges) + self.matrix[vertices_list[-1]][vertices_list[0]]
 
     def draw_graph(self, area_size = 700, path = None):
         area_coef = area_size*0.4*(2**(not self.circle))
         turtle.delay(0)
         turtle.screensize(area_size, area_size)
 
-        screen = turtle.Screen()
-        screen.setup(area_size,area_size)
-        screen.tracer(False)
+        self.reset_screens()
+        self.screen.setup(area_size,area_size)
+        self.screen.tracer(False)
         t = Turtle()
         t.hideturtle()
         t.speed(0)
@@ -47,8 +53,10 @@ class TSP:
             for i in range(len(self.vertices)-1):
                 for j in range(i+1, len(self.vertices)):
                     t.penup()
+
                     t.setpos(self.vertices[i]*area_coef-(not self.circle)*area_size*0.4)
                     t.pendown()
+
                     t.goto(self.vertices[j]*area_coef-(not self.circle)*area_size*0.4)
 
         if path:
@@ -73,4 +81,4 @@ class TSP:
             t.circle(circle_size,steps=6)
             t.end_fill()
 
-        screen.update()
+        self.screen.update()

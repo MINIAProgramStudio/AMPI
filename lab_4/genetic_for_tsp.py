@@ -1,12 +1,29 @@
 import numpy as np
 from random import random
 from tqdm import tqdm
+import copy
+import time
+
+def de_loopilise(path, a_parent, b_parent):
+    vert_from = path[-1]
+    seek_a = a_parent[(a_parent.index(vert_from)+1)%len(a_parent)]
+    seek_b = b_parent[(a_parent.index(vert_from)+1)%len(a_parent)]
+    while seek_a in path and seek_b in path:
+        seek_a = a_parent[(a_parent.index(seek_a) + 1) % len(a_parent)]
+        seek_b = b_parent[(b_parent.index(seek_b) + 1) % len(a_parent)]
+    if seek_a in path:
+        path.append(seek_b)
+    else:
+        path.append(seek_a)
+    return path
+
 
 """
 coef
 
 "n_vertices": ,
 "pop_size": ,
+"elitism": ,
 "children": ,
 "m_switch_prob": ,
 "m_pop_prob": ,
@@ -17,25 +34,43 @@ class GTSP:
         self.func = path_eval_func
         self.seeking_min = seeking_min
         self.coef = coef
+        if self.coef["elitism"]>self.coef["pop_size"]:
+            self.coef["elitism"] = self.coef["pop_size"]
 
         self.population = [np.arange(0,self.coef["n_vertices"]) for _ in range(self.coef["pop_size"])]
         for i in range(self.coef["pop_size"]):
             np.random.shuffle(self.population[i])
             self.population[i] = self.population[i].tolist()
-        print(self.population)
 
+    def reset(self):
+        self.population = [np.arange(0, self.coef["n_vertices"]) for _ in range(self.coef["pop_size"])]
+        for i in range(self.coef["pop_size"]):
+            np.random.shuffle(self.population[i])
+            self.population[i] = self.population[i].tolist()
     def sort_and_truncate(self):
         self.population.sort(key = self.func, reverse = not self.seeking_min)
         self.population = self.population[:self.coef["pop_size"]]
 
     def mutate_switch(self):
-        for i in range(self.coef["pop_size"]):
+        for i in range(self.coef["elitism"]):
             if random() < self.coef["m_switch_prob"]:
-                a, b = int(random()*self.coef["pop_size"]), int(random()*self.coef["pop_size"])
+                a, b = int(random()*self.coef["n_vertices"]), int(random()*self.coef["n_vertices"])
+                self.population.append(copy.deepcopy(self.population[i]))
+                self.population[-1][a], self.population[-1][b] = self.population[-1][b], self.population[-1][a]
+        for i in range(self.coef["elitism"],self.coef["pop_size"]):
+            if random() < self.coef["m_switch_prob"]:
+                a, b = int(random()*self.coef["n_vertices"]), int(random()*self.coef["n_vertices"])
                 self.population[i][a], self.population[i][b] = self.population[i][b], self.population[i][a]
 
     def mutate_pop_insert(self):
-        for i in range(self.coef["pop_size"]):
+        for i in range(self.coef["elitism"]):
+            if random() < self.coef["m_pop_prob"]:
+                a, b = int(random() * self.coef["n_vertices"]), int(random() * self.coef["n_vertices"])
+                if b>a: b-=1
+                self.population.append(copy.deepcopy(self.population[i]))
+                vertice = self.population[-1].pop(a)
+                self.population[-1].insert(b, vertice)
+        for i in range(self.coef["elitism"],self.coef["pop_size"]):
             if random() < self.coef["m_pop_prob"]:
                 a, b = int(random() * self.coef["n_vertices"]), int(random() * self.coef["n_vertices"])
                 if b>a: b-=1
@@ -45,37 +80,34 @@ class GTSP:
     def generate_children(self):
         for i in range(self.coef["children"]):
             a, b = int(random() * self.coef["pop_size"]), int(random() * self.coef["pop_size"])
+            if a == b:
+                a, b = int(random() * self.coef["pop_size"]), int(random() * self.coef["pop_size"])
             a_parent = self.population[a]
             b_parent = self.population[b]
-            connections = dict()
-            reverse_connections = dict()
-            for j in range(self.coef["n_vertices"]):
-                vert_from = a_parent[j]
-                vert_to_a = a_parent[(j+1)%self.coef["n_vertices"]]
-                vert_to_b = b_parent[(b_parent.index(vert_from)+1)%self.coef["n_vertices"]]
-                if vert_to_a == vert_to_b:
-                    connections[vert_from] = vert_to_a
-                    reverse_connections[vert_to_a] = vert_from
-
-            path = [a_parent[0]] + [None]*(self.coef["n_vertices"]-1)
-
-            start_index = 1
-            while path[0] in reverse_connections.keys() and path[-1] is None:
-                path.insert(0, reverse_connections[path[0]])
-                path = path[:self.coef["n_vertices"]]
-                start_index += 1
-            for j in range(start_index,self.coef["n_vertices"]):
-                if path[j-1] in connections.keys():
-                    path[j] = connections[path[j-1]]
-                else:
-                    if j%2:
-                        path[j] = a_parent[(a_parent.index(path[j-1])+1)%self.coef["n_vertices"]]
+            path = [0]
+            while len(path) < self.coef["n_vertices"]:
+                vert_to_a = a_parent[(a_parent.index(path[-1])+1)%self.coef["n_vertices"]]
+                vert_to_b = b_parent[(b_parent.index(path[-1])+1)%self.coef["n_vertices"]]
+                if vert_to_a == vert_to_b or path[-1]%2:
+                    if vert_to_a in path:
+                        if vert_to_b in path:
+                            path = de_loopilise(path, a_parent, b_parent)
+                        else:
+                            path.append(vert_to_b)
                     else:
-                        path[j] = b_parent[(b_parent.index(path[j - 1]) + 1)%self.coef["n_vertices"]]
+                        path.append(vert_to_a)
+                else:
+                    if vert_to_b in path:
+                        if vert_to_a in path:
+                            path = de_loopilise(path, a_parent, b_parent)
+                        else:
+                            path.append(vert_to_a)
+                    else:
+                        path.append(vert_to_b)
             self.population.append(path)
 
     def iter(self):
-        #self.mutate_switch()
+        self.mutate_switch()
         self.mutate_pop_insert()
         self.generate_children()
         self.sort_and_truncate()
@@ -86,4 +118,26 @@ class GTSP:
             iterator = tqdm(iterator, desc = "GTSP")
         for _ in iterator:
             self.iter()
-        return(self.population[-1], self.func(self.population[-1]))
+        return(self.func(self.population[0]),self.population[0])
+
+    def solve_stats(self, iterations = 100, progressbar = False):
+        output = []
+        iterator = range(iterations)
+        if progressbar:
+            iterator = tqdm(iterator, desc="GTSP")
+        self.sort_and_truncate()
+        for _ in iterator:
+            output.append(self.func(self.population[0]))
+            self.iter()
+        output.append(self.func(self.population[0]))
+        return (self.func(self.population[0]), self.population[0], output)
+
+    def solve_seconds(self, seconds = 10):
+        output = []
+        start = time.time()
+        self.sort_and_truncate()
+        while start + seconds > time.time():
+            output.append([time.time()-start, self.func(self.population[0])])
+            self.iter()
+        output.append([time.time()-start, self.func(self.population[0])])
+        return (self.func(self.population[0]), self.population[0], output)
