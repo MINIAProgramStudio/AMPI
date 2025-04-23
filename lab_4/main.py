@@ -33,7 +33,7 @@ def GTSP_optimiser(pos):
         "m_switch_prob": pos[3],
         "m_pop_prob": pos[4]
     }, a.check_path, True)
-    result = _a_gtsp.solve_seconds(0.25)
+    result = _a_gtsp.solve_seconds(1.5)
     return result[0]
 
 def GTSP_optimiser_limit_1(pos):
@@ -44,16 +44,16 @@ GTSP_optimiser_limits = FuncLim(GTSP_optimiser, [[GTSP_optimiser_limit_1,10,1]])
 PSO_GTSP = PSOSolver({
     "a1": 0.1,#acceleration number
     "a2": 0.2,#acceleration number
-    "pop_size": 20,#population size
+    "pop_size": 15,#population size
     "dim": 5,#dimensions
     "pos_min": np.array([0,0,0,0,0]),#vector of minimum positions
     "pos_max": np.array([1,1,1,1,1]),#vector of maximum positions
     "speed_min": np.array([-0.1,-0.1,-0.1,-0.1,-0.1]),#vector of min speed
     "speed_max": np.array([0.1,0.1,0.1,0.1,0.1]),#vector of max speed
 }, GTSP_optimiser_limits.func, seeking_min = True)
-pso_result = PSO_GTSP.solve(100,True)
+pso_result = PSO_GTSP.solve(30,True)
 print("pso",pso_result[0],pso_result[1])
-
+input()
 
 a_gtsp = GTSP({
         "n_vertices": VERTICES,
@@ -64,13 +64,13 @@ a_gtsp = GTSP({
         "m_pop_prob": 0.5
     }, a.check_path, True)
 
-a_pso_gtsp = GTSP({
+a_fast_pso_gtsp = GTSP({
         "n_vertices": VERTICES,
-        "pop_size": 550,
-        "elitism": 250,
-        "children": 300,
-        "m_switch_prob": 0.115,
-        "m_pop_prob": 0.75
+        "pop_size": 20,
+        "elitism": 5,
+        "children": 100,
+        "m_switch_prob": 0.44,
+        "m_pop_prob": 0.92
     }, a.check_path, True)
 result = MCR.MCR(a.check_path,VERTICES,10000, True)
 print(result)
@@ -86,7 +86,7 @@ plt.show()
 """
 SECONDS = 5
 y_gtsp = a_gtsp.solve_seconds(SECONDS)
-y_pso_gtsp = a_pso_gtsp.solve_seconds(SECONDS)
+y_pso_gtsp = a_fast_pso_gtsp.solve_seconds(SECONDS)
 y_mcr = MCR.MCR_seconds(a.check_path, VERTICES, SECONDS)
 plt.plot([dot[0] for dot in y_gtsp[2]],[dot[1] for dot in y_gtsp[2]], label = "gtsp")
 plt.plot([dot[0] for dot in y_mcr[2]],[dot[1] for dot in y_mcr[2]], label = "mcr")
@@ -96,4 +96,8 @@ plt.yscale("log")
 plt.show()
 a.draw_graph(path = y_gtsp[1])
 input()
+a.draw_graph(path = y_pso_gtsp[1])
+input()
+
 a.draw_graph(path = y_mcr[1])
+input()
