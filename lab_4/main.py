@@ -20,7 +20,7 @@ def test_mean(object, iterations, tests, desc="test_mean"):
 
 
 #basic GTSP test
-VERTICES = 30
+VERTICES = 200
 a = TSP(VERTICES, circle = False, init_progressbar=True)
 a.draw_graph()
 """
@@ -123,30 +123,34 @@ a_greed_gtsp = GTSP({
 }, a.check_path, True)
 
 a_ants = AntSolver({
-    "a": 0.15,
-    "b": 0.85, # a + b = 1
-    "evaporation": 0.92,
-    "Q": 4.63
+    "a": 0.8,
+    "b": 0.2, # a + b = 1
+    "evaporation": 0.1,
+    "Q": 7
 }, a)
+
+print(a_ants.solve_seconds(3))
+a_ants.reset()
+
 """
-y_a = test_mean(a_gtsp, 1000, 1, "a_gtsp")
+y_a = test_mean(a_ants, 100, 5, "a_gtsp")
 
 plt.plot(range(len(y_a)),y_a, label="Basic test, " + str(VERTICES) + " vertices")
 plt.legend()
 plt.yscale("log")
 plt.show()
 """
-SECONDS = 5
-y_gtsp = a_gtsp.solve_seconds(SECONDS)
-y_fast_pso_gtsp = a_fast_pso_gtsp.solve_seconds(SECONDS)
-y_medium_pso_gtsp = a_medium_pso_gtsp.solve_seconds(SECONDS)
-y_mcr = MCR.MCR_seconds(a.check_path, VERTICES, SECONDS)
+SECONDS = 60
+#y_gtsp = a_gtsp.solve_seconds(SECONDS)
+#y_fast_pso_gtsp = a_fast_pso_gtsp.solve_seconds(SECONDS)
+#y_medium_pso_gtsp = a_medium_pso_gtsp.solve_seconds(SECONDS)
+#y_mcr = MCR.MCR_seconds(a.check_path, VERTICES, SECONDS)
 y_greed_gtsp = a_greed_gtsp.solve_seconds(SECONDS)
 y_ants = a_ants.solve_seconds(SECONDS)
-plt.plot([dot[0] for dot in y_gtsp[2]],[dot[1] for dot in y_gtsp[2]], label = "gtsp")
-plt.plot([dot[0] for dot in y_mcr[2]],[dot[1] for dot in y_mcr[2]], label = "mcr")
-plt.plot([dot[0] for dot in y_fast_pso_gtsp[2]],[dot[1] for dot in y_fast_pso_gtsp[2]], label = "pso_fast_gtsp")
-plt.plot([dot[0] for dot in y_medium_pso_gtsp[2]],[dot[1] for dot in y_medium_pso_gtsp[2]], label = "pso_medium_gtsp")
+#plt.plot([dot[0] for dot in y_gtsp[2]],[dot[1] for dot in y_gtsp[2]], label = "gtsp")
+#plt.plot([dot[0] for dot in y_mcr[2]],[dot[1] for dot in y_mcr[2]], label = "mcr")
+#plt.plot([dot[0] for dot in y_fast_pso_gtsp[2]],[dot[1] for dot in y_fast_pso_gtsp[2]], label = "pso_fast_gtsp")
+#plt.plot([dot[0] for dot in y_medium_pso_gtsp[2]],[dot[1] for dot in y_medium_pso_gtsp[2]], label = "pso_medium_gtsp")
 plt.plot([dot[0] for dot in y_greed_gtsp[2]],[dot[1] for dot in y_greed_gtsp[2]], label = "greedy_gtsp")
 plt.plot([dot[0] for dot in y_ants[2]],[dot[1] for dot in y_ants[2]], label = "ants")
 plt.legend()

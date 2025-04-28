@@ -20,41 +20,58 @@ class AntSolver:
         self.func = TSP.check_path
 
         self.lengths = TSP.matrix
-        self.antilengths = (1/TSP.matrix)**self.coef["b"]
+        self.antilengths = np.power(1/TSP.matrix,self.coef["b"])
         self.coef["n_vertices"] = len(TSP.matrix)
-        self.pheromones = np.ones((self.coef["n_vertices"],self.coef["n_vertices"]))*0.1
-        self.startup_time = time.time() - self.startup_time
+        self.coef["evaporation"] = (1 - self.coef["evaporation"]) ** self.coef["a"]
 
-    def reset(self):
-        self.pheromones = np.ones((self.coef["n_vertices"], self.coef["n_vertices"])) * 0.1
-
-    def iter(self):
         # generate weights
-        weights_memory = np.zeros((self.coef["n_vertices"],self.coef["n_vertices"]))
+        self.weights_memory = np.zeros((self.coef["n_vertices"], self.coef["n_vertices"]))
         for start_pos in range(self.coef["n_vertices"]):
             weights_for_starting_pos = np.zeros((self.coef["n_vertices"]))
 
-            for end_pos in range(start_pos+1,self.coef["n_vertices"]):
-                weights_for_starting_pos[end_pos] = self.pheromones[start_pos][end_pos]**self.coef["a"] * self.antilengths[start_pos][end_pos]
-            weights_memory[start_pos] = weights_for_starting_pos
+            for end_pos in range(start_pos + 1, self.coef["n_vertices"]):
+                weights_for_starting_pos[end_pos] = 0.01 ** self.coef["a"] * \
+                                                    self.antilengths[start_pos][end_pos]
+            self.weights_memory[start_pos] = weights_for_starting_pos
         for start_pos in range(self.coef["n_vertices"]):
             for end_pos in range(start_pos):
-                weights_memory[start_pos][end_pos] = weights_memory[end_pos][start_pos]
+                self.weights_memory[start_pos][end_pos] = self.weights_memory[end_pos][start_pos]
 
-            weights_memory[start_pos][start_pos] = 0
+            self.weights_memory[start_pos][start_pos] = 0
+
+        self.startup_time = time.time() - self.startup_time
+
+    def reset(self):
+
+        # generate weights
+        self.weights_memory = np.zeros((self.coef["n_vertices"], self.coef["n_vertices"]))
         for start_pos in range(self.coef["n_vertices"]):
-            weights_memory[start_pos] = weights_memory[start_pos]/np.sum(weights_memory[start_pos])
+            weights_for_starting_pos = np.zeros((self.coef["n_vertices"]))
 
+            for end_pos in range(start_pos + 1, self.coef["n_vertices"]):
+                weights_for_starting_pos[end_pos] = 0.01 ** self.coef["a"] * \
+                                                    self.antilengths[start_pos][end_pos]
+            self.weights_memory[start_pos] = weights_for_starting_pos
+        for start_pos in range(self.coef["n_vertices"]):
+            for end_pos in range(start_pos):
+                self.weights_memory[start_pos][end_pos] = self.weights_memory[end_pos][start_pos]
+
+            self.weights_memory[start_pos][start_pos] = 0
+
+    def iter(self):
+        #balance weights
+        for start_pos in range(self.coef["n_vertices"]):
+            self.weights_memory[start_pos] /= np.sum(self.weights_memory[start_pos])
+        weights_additive = np.zeros((self.coef["n_vertices"], self.coef["n_vertices"]))
         #run ants
         best_path = []
         best_path_length = 0
-        delta_pheromones = np.zeros((self.coef["n_vertices"],self.coef["n_vertices"])).astype(int)
         for start_pos in range(self.coef["n_vertices"]):
             path = np.zeros((self.coef["n_vertices"])).astype(int)
             path[0] = start_pos
             path_length = 0
             for i in range(self.coef["n_vertices"]-1):
-                weights = copy.deepcopy(weights_memory[path[i]])
+                weights = copy.deepcopy(self.weights_memory[path[i]])
                 eliminated_weights = 0
                 for j in range(self.coef["n_vertices"]):
                     if j in path:
@@ -73,19 +90,19 @@ class AntSolver:
                     selected_path = self.coef["n_vertices"]-1
                 path[i+1] = selected_path
                 path_length += self.lengths[path[i]][selected_path]
-                delta_pheromones[path[i]][selected_path] += self.coef["Q"]/path_length
-
+                weights_additive[path[i]][selected_path] += (self.coef["Q"]/path_length)**self.coef["a"]
+                weights_additive[selected_path][path[i]] += (self.coef["Q"]/path_length) ** self.coef["a"]
             if start_pos == 0:
                 best_path = path
-                best_path_length = self.func(path)
+                best_path_length = path_length
             else:
-                path_length = self.func(path)
+                path_length = path_length
                 if path_length < best_path_length:
                     best_path = path
                     best_path_length = path_length
 
-        self.pheromones *= (1-self.coef["evaporation"])
-        self.pheromones += delta_pheromones
+        self.weights_memory *= self.coef["evaporation"]
+        self.weights_memory += weights_additive
         return [best_path_length, best_path.tolist()]
 
     def solve(self, iterations = 100, progressbar = False):
