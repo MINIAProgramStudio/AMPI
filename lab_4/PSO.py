@@ -45,6 +45,7 @@ coef list:
 "pos_max": ,#vector of maximum positions
 "speed_min": ,#vector of min speed
 "speed_max": ,#vector of max speed
+"greed": ,# false or matrix
 """
 
 

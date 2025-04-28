@@ -23,17 +23,23 @@ class TSP:
         self.matrix = np.array([
             [np.sqrt(np.sum(np.power(self.vertices[i]-self.vertices[j], 2))) for j in range(vertices)] for i in matrix_iterator
         ])
+        for _ in range(vertices):
+            self.matrix[_][_] = float("inf")
 
     def reset_screens(self):
         for t in self.screen.turtles():
             t.reset()
             t.hideturtle()
 
-    def check_path(self, vertices_list):
+    def check_path(self, vertices_list, cycle = True):
         if len(vertices_list) < 2:
             raise Exception("TSP.check_path ERROR: path must be at least two vertices long")
-        edges = [self.matrix[vertices_list[i]][vertices_list[i+1]] for i in range(len(vertices_list)-1)]
-        return sum(edges) + self.matrix[vertices_list[-1]][vertices_list[0]]
+        length = 0
+        for i in range(len(vertices_list)-1):
+            length += self.matrix[vertices_list[i]][vertices_list[i+1]]
+        if cycle:
+            length += self.matrix[vertices_list[-1]][vertices_list[0]]
+        return length
 
     def draw_graph(self, area_size = 700, path = None):
         area_coef = area_size*0.4*(2**(not self.circle))

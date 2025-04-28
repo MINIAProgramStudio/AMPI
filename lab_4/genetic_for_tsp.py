@@ -31,16 +31,30 @@ coef
 
 class GTSP:
     def __init__(self, coef, path_eval_func, seeking_min = True):
+        self.startup_time = time.time()
         self.func = path_eval_func
         self.seeking_min = seeking_min
         self.coef = coef
+        self.population = []
         if self.coef["elitism"]>self.coef["pop_size"]:
             self.coef["elitism"] = self.coef["pop_size"]
+        if (not isinstance(self.coef["greed"],bool)) and seeking_min:
 
-        self.population = [np.arange(0,self.coef["n_vertices"]) for _ in range(self.coef["pop_size"])]
-        for i in range(self.coef["pop_size"]):
-            np.random.shuffle(self.population[i])
-            self.population[i] = self.population[i].tolist()
+            for start in range(min(self.coef["pop_size"], self.coef["n_vertices"])):
+                path = [start]
+                for _ in range(self.coef["n_vertices"]-1):
+                    distances = self.coef["greed"][path[-1]].tolist()
+                    while True:
+                        best_distance = distances.index(min(distances))
+                        if best_distance in path:
+                            distances[best_distance] = float("inf")
+                        else:
+                            break
+                    path.append(best_distance)
+                self.population.append(path)
+
+        self.population += [np.random.permutation(self.coef["n_vertices"]).tolist() for _ in range(len(self.population),self.coef["pop_size"])]
+        self.startup_time = time.time()-self.startup_time
 
     def reset(self):
         self.population = [np.arange(0, self.coef["n_vertices"]) for _ in range(self.coef["pop_size"])]
@@ -134,7 +148,7 @@ class GTSP:
 
     def solve_seconds(self, seconds = 10):
         output = []
-        start = time.time()
+        start = time.time()-self.startup_time
         self.sort_and_truncate()
         while start + seconds > time.time():
             output.append([time.time()-start, self.func(self.population[0])])

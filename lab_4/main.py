@@ -6,6 +6,7 @@ from tqdm import tqdm
 import MCR
 from FuncLim import FuncLim
 from PSO import PSOSolver
+from ants import AntSolver
 
 def test_mean(object, iterations, tests, desc="test_mean"):
     output = []
@@ -19,10 +20,10 @@ def test_mean(object, iterations, tests, desc="test_mean"):
 
 
 #basic GTSP test
-VERTICES = 100
-a = TSP(VERTICES, circle = True)
+VERTICES = 30
+a = TSP(VERTICES, circle = False, init_progressbar=True)
 a.draw_graph()
-
+"""
 def GTSP_optimiser(pos):
 
     _a_gtsp = GTSP({
@@ -55,13 +56,40 @@ pso_result = PSO_GTSP.solve(30,True)
 print("pso",pso_result[0],pso_result[1])
 input()
 
+
+def ants_optimiser(pos):
+    _a_ants = AntSolver({
+        "a": pos[0],
+        "b": 1-pos[0],  # a + b = 1
+        "evaporation": pos[1],
+        "Q": pos[2]
+    }, a)
+    result = _a_ants.solve_seconds(5)
+    return result[0]
+
+
+PSO_ants = PSOSolver({
+    "a1": 0.1,#acceleration number
+    "a2": 0.2,#acceleration number
+    "pop_size": 15,#population size
+    "dim": 3,#dimensions
+    "pos_min": np.array([0,0,0]),#vector of minimum positions
+    "pos_max": np.array([1,1,10]),#vector of maximum positions
+    "speed_min": np.array([-1,-1,-1]),#vector of min speed
+    "speed_max": np.array([1,1,0.1]),#vector of max speed
+}, ants_optimiser, seeking_min=True)
+pso_result = PSO_ants.solve(60,True)
+print("pso", pso_result[0], pso_result[1])
+"""
+
 a_gtsp = GTSP({
         "n_vertices": VERTICES,
         "pop_size": 50,
         "elitism": 10,
         "children": 100,
         "m_switch_prob": 0.5,
-        "m_pop_prob": 0.5
+        "m_pop_prob": 0.5,
+        "greed": False,
     }, a.check_path, True)
 
 a_fast_pso_gtsp = GTSP({
@@ -70,12 +98,36 @@ a_fast_pso_gtsp = GTSP({
         "elitism": 5,
         "children": 100,
         "m_switch_prob": 0.44,
-        "m_pop_prob": 0.92
+        "m_pop_prob": 0.92,
+        "greed": False,
     }, a.check_path, True)
-result = MCR.MCR(a.check_path,VERTICES,10000, True)
-print(result)
-a.draw_graph(path=result[1])
-input()
+
+a_medium_pso_gtsp = GTSP({
+        "n_vertices": VERTICES,
+        "pop_size": 220,
+        "elitism": 100,
+        "children": 10,
+        "m_switch_prob": 0.72,
+        "m_pop_prob": 0.53,
+        "greed": False,
+    }, a.check_path, True)
+
+a_greed_gtsp = GTSP({
+        "n_vertices": VERTICES,
+        "pop_size": min(50,VERTICES),
+        "elitism": 10,
+        "children": 100,
+        "m_switch_prob": 0.9,
+        "m_pop_prob": 0.9,
+        "greed": a.matrix,
+}, a.check_path, True)
+
+a_ants = AntSolver({
+    "a": 0.15,
+    "b": 0.85, # a + b = 1
+    "evaporation": 0.92,
+    "Q": 4.63
+}, a)
 """
 y_a = test_mean(a_gtsp, 1000, 1, "a_gtsp")
 
@@ -86,18 +138,28 @@ plt.show()
 """
 SECONDS = 5
 y_gtsp = a_gtsp.solve_seconds(SECONDS)
-y_pso_gtsp = a_fast_pso_gtsp.solve_seconds(SECONDS)
+y_fast_pso_gtsp = a_fast_pso_gtsp.solve_seconds(SECONDS)
+y_medium_pso_gtsp = a_medium_pso_gtsp.solve_seconds(SECONDS)
 y_mcr = MCR.MCR_seconds(a.check_path, VERTICES, SECONDS)
+y_greed_gtsp = a_greed_gtsp.solve_seconds(SECONDS)
+y_ants = a_ants.solve_seconds(SECONDS)
 plt.plot([dot[0] for dot in y_gtsp[2]],[dot[1] for dot in y_gtsp[2]], label = "gtsp")
 plt.plot([dot[0] for dot in y_mcr[2]],[dot[1] for dot in y_mcr[2]], label = "mcr")
-plt.plot([dot[0] for dot in y_pso_gtsp[2]],[dot[1] for dot in y_pso_gtsp[2]], label = "pso_gtsp")
+plt.plot([dot[0] for dot in y_fast_pso_gtsp[2]],[dot[1] for dot in y_fast_pso_gtsp[2]], label = "pso_fast_gtsp")
+plt.plot([dot[0] for dot in y_medium_pso_gtsp[2]],[dot[1] for dot in y_medium_pso_gtsp[2]], label = "pso_medium_gtsp")
+plt.plot([dot[0] for dot in y_greed_gtsp[2]],[dot[1] for dot in y_greed_gtsp[2]], label = "greedy_gtsp")
+plt.plot([dot[0] for dot in y_ants[2]],[dot[1] for dot in y_ants[2]], label = "ants")
 plt.legend()
 plt.yscale("log")
+plt.ylabel("best_value")
+plt.xlabel("time (s)")
 plt.show()
+
 a.draw_graph(path = y_gtsp[1])
 input()
-a.draw_graph(path = y_pso_gtsp[1])
+a.draw_graph(path = y_fast_pso_gtsp[1])
 input()
-
-a.draw_graph(path = y_mcr[1])
+a.draw_graph(path = y_medium_pso_gtsp[1])
 input()
+#a.draw_graph(path = y_mcr[1])
+#input()
