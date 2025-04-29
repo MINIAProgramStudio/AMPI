@@ -19,7 +19,7 @@ def test_mean(object, iterations, tests, desc="test_mean"):
 
     return np.mean(output, axis=0)[0]
 
-""""""
+"""
 VERTICES = 30
 a = TSP(VERTICES, circle = False, init_progressbar=True)
 a.draw_graph()
@@ -47,22 +47,23 @@ a_greed_gtsp = GTSP({
 a_ants = AntSolver({
     "a": 1,
     "b": 2,
-    "evaporation": 0.25,
-    "Q": 0.1
+    "evaporation": 0.1,
+    "Q": 5
 }, a)
 
 SECONDS = 5
 y_ants = a_ants.solve_seconds(SECONDS)
+a.draw_graph(path=y_ants[1])
 print("ants_finished")
-#y_medium_pso_gtsp = a_medium_pso_gtsp.solve_seconds(SECONDS)
-#print("mpso_finished")
-#y_mcr = MCR.MCR_seconds(a.check_path, VERTICES, SECONDS)
-#print("mcr_finished")
+y_medium_pso_gtsp = a_medium_pso_gtsp.solve_seconds(SECONDS)
+print("mpso_finished")
+y_mcr = MCR.MCR_seconds(a.check_path, VERTICES, SECONDS)
+print("mcr_finished")
 y_greed_gtsp = a_greed_gtsp.solve_seconds(SECONDS)
 print("greed_finished")
 
-#plt.plot([dot[0] for dot in y_mcr[2]],[dot[1] for dot in y_mcr[2]], label = "mcr")
-#plt.plot([dot[0] for dot in y_medium_pso_gtsp[2]],[dot[1] for dot in y_medium_pso_gtsp[2]], label = "pso_medium_gtsp")
+plt.plot([dot[0] for dot in y_mcr[2]],[dot[1] for dot in y_mcr[2]], label = "mcr")
+plt.plot([dot[0] for dot in y_medium_pso_gtsp[2]],[dot[1] for dot in y_medium_pso_gtsp[2]], label = "pso_medium_gtsp")
 plt.plot([dot[0] for dot in y_greed_gtsp[2]],[dot[1] for dot in y_greed_gtsp[2]], label = "greedy_gtsp")
 plt.plot([dot[0] for dot in y_ants[2]],[dot[1] for dot in y_ants[2]], label = "ants")
 plt.legend()
@@ -105,7 +106,7 @@ a_ants = AntSolver({
 
 SECONDS = 5
 y_medium_pso_gtsp = a_medium_pso_gtsp.solve_seconds(SECONDS)
-#y_mcr = MCR.MCR_seconds(a.check_path, VERTICES, SECONDS)
+y_mcr = MCR.MCR_seconds(a.check_path, VERTICES, SECONDS)
 y_greed_gtsp = a_greed_gtsp.solve_seconds(SECONDS)
 y_ants = a_ants.solve_seconds(SECONDS)
 plt.plot([dot[0] for dot in y_mcr[2]],[dot[1] for dot in y_mcr[2]], label = "mcr")
@@ -164,8 +165,8 @@ plt.yscale("log")
 plt.ylabel("best_value")
 plt.xlabel("time (s)")
 plt.show()
-
-VERTICES = 200
+"""
+VERTICES = 1000
 a = TSP(VERTICES, circle = False, init_progressbar=True)
 a.draw_graph()
 
@@ -190,20 +191,20 @@ a_greed_gtsp = GTSP({
 }, a.check_path, True)
 
 a_ants = AntSolver({
-    "a": 0.2,
-    "b": 1,
-    "evaporation": 0.25,
-    "Q": 0.1,
-    "ants_step": 1
+    "a": 1,
+    "b": 2,
+    "evaporation": 0.01,
+    "Q": 15,
+    "ants_step": 2
 }, a)
 
 SECONDS = 10
 y_ants = a_ants.solve_seconds(SECONDS)
-##y_mcr = MCR.MCR_seconds(a.check_path, VERTICES, SECONDS)
+y_mcr = MCR.MCR_seconds(a.check_path, VERTICES, SECONDS)
 y_greed_gtsp = a_greed_gtsp.solve_seconds(SECONDS)
-
-#.plot([dot[0] for dot in y_mcr[2]],[dot[1] for dot in y_mcr[2]], label = "mcr")
-#plt.plot([dot[0] for dot in y_medium_pso_gtsp[2]],[dot[1] for dot in y_medium_pso_gtsp[2]], label = "pso_medium_gtsp")
+y_medium_pso_gtsp = a_medium_pso_gtsp.solve_seconds(SECONDS)
+plt.plot([dot[0] for dot in y_mcr[2]],[dot[1] for dot in y_mcr[2]], label = "mcr")
+plt.plot([dot[0] for dot in y_medium_pso_gtsp[2]],[dot[1] for dot in y_medium_pso_gtsp[2]], label = "pso_medium_gtsp")
 plt.plot([dot[0] for dot in y_greed_gtsp[2]],[dot[1] for dot in y_greed_gtsp[2]], label = "greedy_gtsp")
 plt.plot([dot[0] for dot in y_ants[2]],[dot[1] for dot in y_ants[2]], label = "ants")
 plt.legend()
