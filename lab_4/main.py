@@ -19,7 +19,7 @@ def test_mean(object, iterations, tests, desc="test_mean"):
 
     return np.mean(output, axis=0)[0]
 
-"""
+
 VERTICES = 30
 a = TSP(VERTICES, circle = False, init_progressbar=True)
 a.draw_graph()
@@ -266,7 +266,7 @@ plt.yscale("log")
 plt.ylabel("best_value")
 plt.xlabel("time (s)")
 plt.show()
-"""
+
 VERTICES = 600
 a = TSP(VERTICES, circle = False, init_progressbar=True)
 a.draw_graph()
