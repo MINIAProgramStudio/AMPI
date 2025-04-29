@@ -146,6 +146,16 @@ class GTSP:
         output.append(self.func(self.population[0]))
         return (self.func(self.population[0]), self.population[0], output)
 
+    def anisolve(self, TSP, iterations = 100, step = 5, minimum_frame_time = 0.5):
+        for i in range(iterations//step):
+            t = time.time()
+            for j in range(step):
+                self.iter()
+
+            TSP.draw_graph(path = self.population[0])
+            time.sleep(max(t + minimum_frame_time - time.time(), 0))
+        return (self.func(self.population[0]), self.population[0])
+
     def solve_seconds(self, seconds = 10):
         output = []
         start = time.time()-self.startup_time

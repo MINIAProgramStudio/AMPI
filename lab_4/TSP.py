@@ -28,7 +28,7 @@ class TSP:
 
     def reset_screens(self):
         for t in self.screen.turtles():
-            t.reset()
+            t.clear()
             t.hideturtle()
 
     def check_path(self, vertices_list, cycle = True):
@@ -41,7 +41,7 @@ class TSP:
             length += self.matrix[vertices_list[-1]][vertices_list[0]]
         return length
 
-    def draw_graph(self, area_size = 700, path = None):
+    def draw_graph(self, area_size = 700, path = None, matrix = None, matrix_line_width = 10):
         area_coef = area_size*0.4*(2**(not self.circle))
         turtle.delay(0)
         turtle.screensize(area_size, area_size)
@@ -53,21 +53,26 @@ class TSP:
         t.hideturtle()
         t.speed(0)
 
-        if len(self.vertices)<=25:
+        if len(self.vertices)<=25 or matrix is not None:
             t.color("gray")
-            t.width(1)
+            if matrix is None:
+                matrix = np.ones((len(self.vertices),len(self.vertices)))
+            norm = np.linalg.norm(matrix)
+            matrix /= norm
             for i in range(len(self.vertices)-1):
                 for j in range(i+1, len(self.vertices)):
                     t.penup()
+                    w = int(matrix[i][j] * matrix_line_width)
+                    if w:
+                        t.setpos(self.vertices[i]*area_coef-(not self.circle)*area_size*0.4)
 
-                    t.setpos(self.vertices[i]*area_coef-(not self.circle)*area_size*0.4)
-                    t.pendown()
-
-                    t.goto(self.vertices[j]*area_coef-(not self.circle)*area_size*0.4)
+                        t.pendown()
+                        t.width(w)
+                        t.goto(self.vertices[j]*area_coef-(not self.circle)*area_size*0.4)
 
         if path:
             t.color("gold")
-            t.width(10)
+            t.width(4)
             t.penup()
             t.setpos(self.vertices[path[0]]*area_coef-(not self.circle)*area_size*0.4)
             t.pendown()

@@ -7,6 +7,7 @@ import MCR
 from FuncLim import FuncLim
 from PSO import PSOSolver
 from ants import AntSolver
+import time
 
 def test_mean(object, iterations, tests, desc="test_mean"):
     output = []
@@ -20,7 +21,7 @@ def test_mean(object, iterations, tests, desc="test_mean"):
 
 
 #basic GTSP test
-VERTICES = 200
+VERTICES = 30
 a = TSP(VERTICES, circle = False, init_progressbar=True)
 a.draw_graph()
 """
@@ -123,16 +124,15 @@ a_greed_gtsp = GTSP({
 }, a.check_path, True)
 
 a_ants = AntSolver({
-    "a": 0.8,
-    "b": 0.2, # a + b = 1
+    "a": 1,
+    "b": 10,
     "evaporation": 0.1,
-    "Q": 7
+    "Q": 10
 }, a)
-
-print(a_ants.solve_seconds(3))
-a_ants.reset()
-
 """
+a_ants.anisolve(a, iterations=10, step=1)
+input()
+
 y_a = test_mean(a_ants, 100, 5, "a_gtsp")
 
 plt.plot(range(len(y_a)),y_a, label="Basic test, " + str(VERTICES) + " vertices")
@@ -140,7 +140,7 @@ plt.legend()
 plt.yscale("log")
 plt.show()
 """
-SECONDS = 60
+SECONDS = 10
 #y_gtsp = a_gtsp.solve_seconds(SECONDS)
 #y_fast_pso_gtsp = a_fast_pso_gtsp.solve_seconds(SECONDS)
 #y_medium_pso_gtsp = a_medium_pso_gtsp.solve_seconds(SECONDS)
@@ -167,3 +167,4 @@ a.draw_graph(path = y_medium_pso_gtsp[1])
 input()
 #a.draw_graph(path = y_mcr[1])
 #input()
+""""""

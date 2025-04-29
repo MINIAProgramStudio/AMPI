@@ -58,7 +58,7 @@ class AntSolver:
 
             self.weights_memory[start_pos][start_pos] = 0
 
-    def iter(self):
+    def iter(self, force_debug = False):
         #balance weights
         for start_pos in range(self.coef["n_vertices"]):
             self.weights_memory[start_pos] /= np.sum(self.weights_memory[start_pos])
@@ -74,9 +74,11 @@ class AntSolver:
                 weights = copy.deepcopy(self.weights_memory[path[i]])
                 eliminated_weights = 0
                 for j in range(self.coef["n_vertices"]):
-                    if j in path:
+                    if j in path[:i+1]:
                         eliminated_weights += weights[j]
                         weights[j] = 0
+                if all(weights == 0):
+                    break
                 weights = weights / (1-eliminated_weights)
 
                 r = random()
@@ -88,10 +90,12 @@ class AntSolver:
                     selected_path += 1
                 if selected_path >= self.coef["n_vertices"]:
                     selected_path = self.coef["n_vertices"]-1
+                if force_debug: print(path)
+                if force_debug: print(np.round(weights, 4))
                 path[i+1] = selected_path
                 path_length += self.lengths[path[i]][selected_path]
-                weights_additive[path[i]][selected_path] += (self.coef["Q"]/path_length)**self.coef["a"]
-                weights_additive[selected_path][path[i]] += (self.coef["Q"]/path_length) ** self.coef["a"]
+                weights_additive[path[i]][selected_path] += (self.coef["Q"]/path_length)
+                weights_additive[selected_path][path[i]] += (self.coef["Q"]/path_length)
             if start_pos == 0:
                 best_path = path
                 best_path_length = path_length
@@ -100,9 +104,11 @@ class AntSolver:
                 if path_length < best_path_length:
                     best_path = path
                     best_path_length = path_length
-
+            if force_debug: print(path)
+            if force_debug: print()
+        if force_debug: print("---------")
         self.weights_memory *= self.coef["evaporation"]
-        self.weights_memory += weights_additive
+        self.weights_memory += (weights_additive/self.coef["n_vertices"])**self.coef["a"]
         return [best_path_length, best_path.tolist()]
 
     def solve(self, iterations = 100, progressbar = False):
@@ -122,6 +128,25 @@ class AntSolver:
                     best_length = result[0]
         return [best_length, best_path]
 
+    def anisolve(self, TSP, iterations = 100, step = 5, minimum_frame_time = 0.5, force_debug = False):
+        best_path = []
+        best_length = 0
+        for i in range(iterations//step):
+            t = time.time()
+            for j in range(step):
+                result = self.iter()
+                if i+j == 0:
+                    best_path = result[1]
+                    best_length = result[0]
+                else:
+                    if best_length > result[0]:
+                        best_path = result[1]
+                        best_length = result[0]
+                if force_debug: print(np.round(self.weights_memory,3).astype(float))
+                if force_debug: print()
+            TSP.draw_graph(path = best_path, matrix = self.weights_memory, matrix_line_width=30)
+            time.sleep(max(t + minimum_frame_time - time.time(), 0))
+
     def solve_stats(self, iterations = 100, progressbar = False):
         output = []
         iterator = range(iterations)
@@ -138,7 +163,7 @@ class AntSolver:
                 if best_length > result[0]:
                     best_path = result[1]
                     best_length = result[0]
-            output.append(best_length)
+            output.append(self.func(best_path))
         return (best_length, best_path, output)
 
     def solve_seconds(self, seconds = 10):
@@ -152,8 +177,8 @@ class AntSolver:
                 best_path = result[1]
                 best_length = result[0]
             else:
-                if best_length > result[0]:
-                    best_path = result[1]
-                    best_length = result[0]
-            output.append([time.time()-start,best_length])
+                #if best_length > result[0]:
+                best_path = result[1]
+                best_length = result[0]
+            output.append([time.time()-start,self.func(best_path)])
         return (best_length, best_path, output)
