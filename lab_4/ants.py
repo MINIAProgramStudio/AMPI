@@ -1,4 +1,4 @@
-import numpy as np
+#import numpy as np
 from random import random
 from tqdm import tqdm
 import copy
@@ -19,7 +19,7 @@ class AntSolver:
     def __init__(self, coef, TSP):
         self.startup_time = time.time()
         self.coef = coef
-        self.func = TSP.check_path
+        self.check_path = TSP.check_path
         self.antilengths = cp.power(cp.divide(1,cp.asarray(TSP.matrix, dtype=cp.float16)),self.coef["b"])
         self.coef["n_vertices"] = len(TSP.matrix)
         if not "ants_step" in self.coef.keys():
@@ -28,52 +28,67 @@ class AntSolver:
         self.pheromones = cp.ones((self.coef["n_vertices"], self.coef["n_vertices"]),dtype=cp.float16)
 
         self.startup_time = time.time() - self.startup_time
+        print(self.startup_time)
+
+    def func(self,path):
+        return self.check_path(path.tolist())
 
     def reset(self):
-        self.pheromones = np.ones((self.coef["n_vertices"], self.coef["n_vertices"]))
+        self.pheromones = cp.ones((self.coef["n_vertices"], self.coef["n_vertices"]))
 
     def iter(self, force_debug = False):
-        weights_memory = cp.asnumpy(cp.multiply(cp.power(self.pheromones, self.coef["a"]),self.antilengths))
-        delta_pheromones = np.zeros((self.coef["n_vertices"], self.coef["n_vertices"]),dtype=np.float16)
+        time_memory = 0
+
+        weights_memory = cp.multiply(cp.power(self.pheromones, self.coef["a"]),self.antilengths)
+        delta_pheromones = cp.zeros((self.coef["n_vertices"], self.coef["n_vertices"]),dtype=cp.float16)
 
         #run ants
+
         best_path = []
         best_path_length = 0
-        path = np.zeros((self.coef["n_vertices"]), dtype=int)
+        paths = cp.zeros((self.coef["n_vertices"],self.coef["n_vertices"]), dtype=int)
 
         for start_pos in range(0,self.coef["n_vertices"],self.coef["ants_step"]):
-            path[0] = start_pos
+
+            paths[start_pos][0] = start_pos
+            elimination_vector = cp.ones((self.coef["n_vertices"]))
 
             for i in range(self.coef["n_vertices"]-1):
-                eliminated_weights = np.zeros((self.coef["n_vertices"]), dtype=np.float16)
-                for j in range(i+1):
-                    j = path[j]
-                    eliminated_weights[j] = weights_memory[path[i]][j]
-                weights = weights_memory[path[i]]-eliminated_weights
+
+                weights = cp.multiply(weights_memory[paths[start_pos][i]],elimination_vector)
+
                 #if force_debug: print(path)
-                #if force_debug: print(np.round(weights, 4))
-                selected_path = np.random.choice(len(weights), size = 1, p=np.divide(weights, np.sum(weights, dtype=np.float64), dtype = np.float32))[0]
-                path[i+1] = selected_path
-            path_length = self.func(path)
+                #if force_debug: print(cp.round(weights, 4))
+                time_memory -= time.time()
+                selected_path = cp.random.choice(self.coef["n_vertices"], size = 1, p=cp.divide(weights, cp.sum(weights, dtype=cp.float64), dtype = cp.float32))[0]
+                time_memory += time.time()
+                paths[start_pos][i+1] = selected_path
+                elimination_vector[i+1] = 0
+
+        paths_lengths = list(map(self.func, paths))
+
+
+        for k in range(self.coef["n_vertices"]):
             for i in range(self.coef["n_vertices"]-1):
-                delta_pheromones[path[i]][path[i+1]] += (self.coef["Q"] / path_length)
-                delta_pheromones[path[i+1]][path[i]] += (self.coef["Q"] / path_length)
-            delta_pheromones[path[0]][path[-1]] += (self.coef["Q"] / path_length)
-            delta_pheromones[path[-1]][path[0]] += (self.coef["Q"] / path_length)
-            if start_pos == 0:
-                best_path = path
-                best_path_length = path_length
+                delta_pheromones[paths[k][i]][paths[k][i+1]] += (self.coef["Q"] / paths_lengths[k])
+                delta_pheromones[paths[k][i+1]][paths[k][i]] += (self.coef["Q"] / paths_lengths[k])
+            delta_pheromones[paths[k][0]][paths[k][-1]] += (self.coef["Q"] / paths_lengths[k])
+            delta_pheromones[paths[k][-1]][paths[k][0]] += (self.coef["Q"] / paths_lengths[k])
+            if k == 0:
+                best_path = paths[k]
+                best_path_length = paths_lengths[k]
             else:
-                if path_length < best_path_length:
-                    best_path = path
-                    best_path_length = path_length
-            if force_debug: print(path)
+                if paths_lengths[k] < best_path_length:
+                    best_path = paths[k]
+                    best_path_length = paths_lengths[k]
+            if force_debug: print(paths[k])
             if force_debug: print()
         if force_debug: print("---------")
+
         self.pheromones *= (1-self.coef["evaporation"])
         self.pheromones += cp.asarray(delta_pheromones)
-
-        return [best_path_length, best_path.tolist()]
+        print(time_memory)
+        return [best_path_length, best_path]
 
     def solve(self, iterations = 100, progressbar = False):
         iterator = range(iterations)
@@ -107,7 +122,7 @@ class AntSolver:
                     if best_length > result[0]:
                         best_path = result[1]
                         best_length = result[0]
-                if force_debug: print(np.round(self.pheromones,3).astype(float))
+                if force_debug: print(cp.round(self.pheromones,3).astype(float))
                 if force_debug: print()
             TSP.draw_graph(path = best_path, matrix = self.pheromones, matrix_line_width=50)
             time.sleep(max(t + minimum_frame_time - time.time(), 0))

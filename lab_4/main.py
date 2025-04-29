@@ -54,15 +54,15 @@ a_ants = AntSolver({
 SECONDS = 5
 y_ants = a_ants.solve_seconds(SECONDS)
 print("ants_finished")
-y_medium_pso_gtsp = a_medium_pso_gtsp.solve_seconds(SECONDS)
-print("mpso_finished")
-y_mcr = MCR.MCR_seconds(a.check_path, VERTICES, SECONDS)
-print("mcr_finished")
+#y_medium_pso_gtsp = a_medium_pso_gtsp.solve_seconds(SECONDS)
+#print("mpso_finished")
+#y_mcr = MCR.MCR_seconds(a.check_path, VERTICES, SECONDS)
+#print("mcr_finished")
 y_greed_gtsp = a_greed_gtsp.solve_seconds(SECONDS)
 print("greed_finished")
 
-plt.plot([dot[0] for dot in y_mcr[2]],[dot[1] for dot in y_mcr[2]], label = "mcr")
-plt.plot([dot[0] for dot in y_medium_pso_gtsp[2]],[dot[1] for dot in y_medium_pso_gtsp[2]], label = "pso_medium_gtsp")
+#plt.plot([dot[0] for dot in y_mcr[2]],[dot[1] for dot in y_mcr[2]], label = "mcr")
+#plt.plot([dot[0] for dot in y_medium_pso_gtsp[2]],[dot[1] for dot in y_medium_pso_gtsp[2]], label = "pso_medium_gtsp")
 plt.plot([dot[0] for dot in y_greed_gtsp[2]],[dot[1] for dot in y_greed_gtsp[2]], label = "greedy_gtsp")
 plt.plot([dot[0] for dot in y_ants[2]],[dot[1] for dot in y_ants[2]], label = "ants")
 plt.legend()
@@ -105,7 +105,7 @@ a_ants = AntSolver({
 
 SECONDS = 5
 y_medium_pso_gtsp = a_medium_pso_gtsp.solve_seconds(SECONDS)
-y_mcr = MCR.MCR_seconds(a.check_path, VERTICES, SECONDS)
+#y_mcr = MCR.MCR_seconds(a.check_path, VERTICES, SECONDS)
 y_greed_gtsp = a_greed_gtsp.solve_seconds(SECONDS)
 y_ants = a_ants.solve_seconds(SECONDS)
 plt.plot([dot[0] for dot in y_mcr[2]],[dot[1] for dot in y_mcr[2]], label = "mcr")
