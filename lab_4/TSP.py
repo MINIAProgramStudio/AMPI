@@ -22,7 +22,7 @@ class TSP:
             matrix_iterator = tqdm(matrix_iterator, desc = "TSP calculating distances")
         self.matrix = np.array([
             [np.sqrt(np.sum(np.power(self.vertices[i]-self.vertices[j], 2))) for j in range(vertices)] for i in matrix_iterator
-        ])
+        ],dtype=np.float16)
         for _ in range(vertices):
             self.matrix[_][_] = float("inf")
 
