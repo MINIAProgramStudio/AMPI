@@ -57,31 +57,31 @@ pso_result = PSO_GTSP.solve(30,True)
 print("pso",pso_result[0],pso_result[1])
 input()
 
-
+"""
 def ants_optimiser(pos):
     _a_ants = AntSolver({
         "a": pos[0],
-        "b": 1-pos[0],  # a + b = 1
-        "evaporation": pos[1],
-        "Q": pos[2]
+        "b": pos[2],
+        "evaporation": pos[3],
+        "Q": pos[4]
     }, a)
-    result = _a_ants.solve_seconds(5)
+    result = _a_ants.solve_seconds(2)
     return result[0]
 
 
 PSO_ants = PSOSolver({
-    "a1": 0.1,#acceleration number
-    "a2": 0.2,#acceleration number
-    "pop_size": 15,#population size
-    "dim": 3,#dimensions
-    "pos_min": np.array([0,0,0]),#vector of minimum positions
-    "pos_max": np.array([1,1,10]),#vector of maximum positions
-    "speed_min": np.array([-1,-1,-1]),#vector of min speed
-    "speed_max": np.array([1,1,0.1]),#vector of max speed
+    "a1": 0.4,#acceleration number
+    "a2": 0.8,#acceleration number
+    "pop_size": 5,#population size
+    "dim": 4,#dimensions
+    "pos_min": np.array([0,0,0,0]),#vector of minimum positions
+    "pos_max": np.array([10,10,10,30]),#vector of maximum positions
+    "speed_min": np.array([-5,-5,-5,-5]),#vector of min speed
+    "speed_max": np.array([5,5,5,5]),#vector of max speed
 }, ants_optimiser, seeking_min=True)
-pso_result = PSO_ants.solve(60,True)
+pso_result = PSO_ants.solve(,True)
 print("pso", pso_result[0], pso_result[1])
-"""
+
 
 a_gtsp = GTSP({
         "n_vertices": VERTICES,
@@ -124,13 +124,13 @@ a_greed_gtsp = GTSP({
 }, a.check_path, True)
 
 a_ants = AntSolver({
-    "a": 1,
-    "b": 10,
+    "a": 0.5,
+    "b": 2,
     "evaporation": 0.1,
     "Q": 10
 }, a)
 """
-a_ants.anisolve(a, iterations=10, step=1)
+a_ants.anisolve(a, iterations=100, step=1)
 input()
 
 y_a = test_mean(a_ants, 100, 5, "a_gtsp")
