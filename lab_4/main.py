@@ -22,7 +22,7 @@ def test_mean(object, iterations, tests, desc="test_mean"):
 
 #basic GTSP test
 VERTICES = 30
-a = TSP(VERTICES, circle = False, init_progressbar=True)
+a = TSP(VERTICES, circle = True, init_progressbar=True)
 a.draw_graph()
 """
 def GTSP_optimiser(pos):
@@ -57,7 +57,7 @@ pso_result = PSO_GTSP.solve(30,True)
 print("pso",pso_result[0],pso_result[1])
 input()
 
-"""
+
 def ants_optimiser(pos):
     _a_ants = AntSolver({
         "a": pos[0],
@@ -81,7 +81,7 @@ PSO_ants = PSOSolver({
 }, ants_optimiser, seeking_min=True)
 pso_result = PSO_ants.solve(30,True)
 print("pso", pso_result[0], pso_result[1])
-
+"""
 
 a_gtsp = GTSP({
         "n_vertices": VERTICES,
@@ -129,17 +129,18 @@ a_ants = AntSolver({
     "evaporation": 0.1,
     "Q": 10
 }, a)
+a_ants.reset()
 """
-a_ants.anisolve(a, iterations=100, step=1)
+a_ants.anisolve(a, iterations=100, step=10)
 input()
-
-y_a = test_mean(a_ants, 100, 5, "a_gtsp")
+"""
+y_a = test_mean(a_ants, 100, 5, "ants")
 
 plt.plot(range(len(y_a)),y_a, label="Basic test, " + str(VERTICES) + " vertices")
 plt.legend()
 plt.yscale("log")
 plt.show()
-"""
+
 SECONDS = 10
 #y_gtsp = a_gtsp.solve_seconds(SECONDS)
 #y_fast_pso_gtsp = a_fast_pso_gtsp.solve_seconds(SECONDS)

@@ -23,12 +23,12 @@ class AntSolver:
         self.antilengths = np.power(1/TSP.matrix,self.coef["b"])
         self.coef["n_vertices"] = len(TSP.matrix)
         
-        self.pheromones = np.ones((self.coef["n_vertices"], self.coef["n_vertices"]))*0.1
-
+        self.pheromones = np.ones((self.coef["n_vertices"], self.coef["n_vertices"]))
+        
         self.startup_time = time.time() - self.startup_time
 
     def reset(self):
-        self.pheromones = np.ones((self.coef["n_vertices"], self.coef["n_vertices"])) * 0.1
+        self.pheromones = np.ones((self.coef["n_vertices"], self.coef["n_vertices"]))
 
     def iter(self, force_debug = False):
         weights_memory = np.multiply(np.power(self.pheromones, self.coef["a"]),self.antilengths)
@@ -46,11 +46,10 @@ class AntSolver:
         best_path = []
         best_path_length = 0
         path = np.zeros((self.coef["n_vertices"]), dtype=int)
+        eliminated_weights = np.zeros((self.coef["n_vertices"]))
         for start_pos in range(self.coef["n_vertices"]):
-            path = np.zeros((self.coef["n_vertices"]), dtype = int)
             path[0] = start_pos
-            path_length = 0
-            eliminated_weights = np.zeros((self.coef["n_vertices"]))
+
             for i in range(self.coef["n_vertices"]-1):
 
                 for j in range(self.coef["n_vertices"]):
@@ -60,28 +59,23 @@ class AntSolver:
                         eliminated_weights[j] = 0
                 if all(eliminated_weights != 0):
                     break
-                weights = (weights_memory[path[i]]-eliminated_weights) / (1-np.sum(eliminated_weights))
-
-                r = random()
-                selected_path = 0
-                for j in range(self.coef["n_vertices"]):
-                    r -= weights[selected_path]
-                    if r < 0:
-                        break
-                    selected_path += 1
-                if selected_path >= self.coef["n_vertices"]:
-                    selected_path = self.coef["n_vertices"]-1
+                weights = (weights_memory[path[i]]-eliminated_weights) / (np.sum(weights_memory[path[i]]-eliminated_weights))
                 if force_debug: print(path)
                 if force_debug: print(np.round(weights, 4))
+
+
+                selected_path = np.random.choice(len(weights), p=weights)
                 path[i+1] = selected_path
-                path_length += self.lengths[path[i]][selected_path]
-                delta_pheromones[path[i]][selected_path] += (self.coef["Q"]/path_length)
-                delta_pheromones[selected_path][path[i]] += (self.coef["Q"]/path_length)
+            path_length = self.func(path)
+            for i in range(self.coef["n_vertices"]-1):
+                delta_pheromones[path[i]][path[i+1]] += (self.coef["Q"] / path_length)
+                delta_pheromones[path[i+1]][path[i]] += (self.coef["Q"] / path_length)
+            delta_pheromones[path[0]][path[-1]] += (self.coef["Q"] / path_length)
+            delta_pheromones[path[-1]][path[0]] += (self.coef["Q"] / path_length)
             if start_pos == 0:
                 best_path = path
                 best_path_length = path_length
             else:
-                path_length = path_length
                 if path_length < best_path_length:
                     best_path = path
                     best_path_length = path_length
@@ -117,6 +111,7 @@ class AntSolver:
             for j in range(step):
                 result = self.iter()
                 if i+j == 0:
+                    print("startup")
                     best_path = result[1]
                     best_length = result[0]
                 else:
@@ -125,7 +120,7 @@ class AntSolver:
                         best_length = result[0]
                 if force_debug: print(np.round(self.pheromones,3).astype(float))
                 if force_debug: print()
-            TSP.draw_graph(matrix = self.pheromones, matrix_line_width=50)
+            TSP.draw_graph(path = best_path, matrix = self.pheromones, matrix_line_width=50)
             time.sleep(max(t + minimum_frame_time - time.time(), 0))
 
     def solve_stats(self, iterations = 100, progressbar = False):
