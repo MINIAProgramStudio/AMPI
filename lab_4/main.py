@@ -61,9 +61,9 @@ input()
 def ants_optimiser(pos):
     _a_ants = AntSolver({
         "a": pos[0],
-        "b": pos[2],
-        "evaporation": pos[3],
-        "Q": pos[4]
+        "b": pos[1],
+        "evaporation": pos[2],
+        "Q": pos[3]
     }, a)
     result = _a_ants.solve_seconds(2)
     return result[0]
@@ -79,7 +79,7 @@ PSO_ants = PSOSolver({
     "speed_min": np.array([-5,-5,-5,-5]),#vector of min speed
     "speed_max": np.array([5,5,5,5]),#vector of max speed
 }, ants_optimiser, seeking_min=True)
-pso_result = PSO_ants.solve(,True)
+pso_result = PSO_ants.solve(30,True)
 print("pso", pso_result[0], pso_result[1])
 
 

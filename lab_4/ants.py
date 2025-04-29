@@ -8,7 +8,7 @@ import time
 coef
 
 "a": ,
-"b": , # a + b = 1
+"b": ,
 "evaporation": ,
 "Q": ,
 """
@@ -22,8 +22,6 @@ class AntSolver:
         self.lengths = TSP.matrix
         self.antilengths = np.power(1/TSP.matrix,self.coef["b"])
         self.coef["n_vertices"] = len(TSP.matrix)
-        self.coef["evaporation"] = (1 - self.coef["evaporation"]) ** self.coef["a"]
-
         
         self.pheromones = np.ones((self.coef["n_vertices"], self.coef["n_vertices"]))*0.1
 
