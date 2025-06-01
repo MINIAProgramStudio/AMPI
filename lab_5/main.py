@@ -1,3 +1,11 @@
 import Backpack
+from GreedyBackpackSolver import GreedyBackpackSolver as GBS
 
-print(Backpack.generate_random_backpack(2,5))
+rb = Backpack.generate_random_backpack(1,10000)
+
+#print(rb)
+
+gbs_rb = GBS(rb)
+gbs_choice = gbs_rb.solve(progressbar=True)
+print(gbs_choice)
+print(rb.fitness(gbs_choice))
