@@ -3,6 +3,7 @@ import numpy as np
 from tqdm import tqdm
 from copy import deepcopy
 
+
 class GreedyBackpackSolver:
     def __init__(self, backpack: Backpack):
         self.backpack = backpack
